@@ -13,6 +13,7 @@ import {
   Moon,
   Sun,
   PenToolIcon as ToolIcon,
+  FileCode2,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import {
@@ -69,7 +70,7 @@ export function Navigation() {
       <div className="container flex h-16 items-center px-4  mx-auto">
         <div className="flex items-center space-x-4">
           <Link href="/" className="flex items-center space-x-2">
-            <FileCode className="h-6 w-6" />
+            <FileCode2 className="h-6 w-6" />
             <span className="font-bold">Stackkit</span>
           </Link>
         </div>
