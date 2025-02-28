@@ -42,6 +42,12 @@ const tools = [
     description: "Convert CSV data to JSON format",
     href: "/tool/csv-to-json",
     icon: FileSpreadsheet
+  },
+  {
+    name: "UUID Generator",
+    description: "Generate unique UUIDs/GUIDs with custom formats",
+    href: "/tool/uuid-generator",
+    icon: FileSpreadsheet
   }
 ]
 
@@ -81,8 +87,8 @@ export default function Home() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredTools.map((tool) => (
           <Link key={tool.href} href={tool.href}>
-            <Card className="h-full hover:shadow-lg transition-shadow">
-              <CardHeader>
+            <Card className="h-full hover:ring-1 hover:ring-primary/20 transition-all transform hover:scale-[1.01]">
+            <CardHeader>
                 <div className="flex items-center space-x-4">
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <tool.icon className="h-6 w-6" />
