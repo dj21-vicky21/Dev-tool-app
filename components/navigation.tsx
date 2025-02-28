@@ -4,12 +4,6 @@ import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
-  Palette,
-  KeyRound,
-  Lock,
-  FileCode,
-  FileJson,
-  FileSpreadsheet,
   Moon,
   Sun,
   PenToolIcon as ToolIcon,
@@ -24,39 +18,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
+import { tools } from "@/app/page";
 
-const tools = [
-  {
-    name: "Color Converter",
-    href: "/tool/color-converter",
-    icon: Palette,
-  },
-  {
-    name: "JWT Decoder",
-    href: "/tool/jwt-decoder",
-    icon: KeyRound,
-  },
-  {
-    name: "Password Generator",
-    href: "/tool/password-generator",
-    icon: Lock,
-  },
-  {
-    name: "Encode/Decode",
-    href: "/tool/encode-decode",
-    icon: FileCode,
-  },
-  {
-    name: "JSON to CSV",
-    href: "/tool/json-to-csv",
-    icon: FileJson,
-  },
-  {
-    name: "CSV to JSON",
-    href: "/tool/csv-to-json",
-    icon: FileSpreadsheet,
-  },
-];
 
 export function Navigation() {
   const { theme, setTheme } = useTheme();
@@ -83,12 +46,12 @@ export function Navigation() {
                   <span>Tools</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-[200px]">
+              <DropdownMenuContent align="start" className=" grid grid-cols-2 gap-2">
                 {tools.map((tool) => (
                   <DropdownMenuItem key={tool.href} asChild>
                     <Link
                       href={tool.href}
-                      className="flex items-center space-x-2"
+                      className="flex items-center space-x-2 cursor-pointer"
                     >
                       <tool.icon className="h-4 w-4" />
                       <span>{tool.name}</span>

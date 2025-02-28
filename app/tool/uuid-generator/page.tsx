@@ -5,10 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   Select,
@@ -125,23 +122,22 @@ export default function UuidGenerator() {
   };
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight"> UUID Generator</h1>
+        <p className="text-muted-foreground">
+          Generate UUIDs in various formats for your applications
+        </p>
+      </div>
       <Card className="max-w-3xl mx-auto">
-        <CardHeader>
-          <CardTitle className="text-2xl flex items-center gap-2">
-            UUID Generator
-          </CardTitle>
-          <CardDescription>
-            Generate UUIDs in various formats for your applications
-          </CardDescription>
-        </CardHeader>
+       
 
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
           className="w-full px-6"
         >
-          <TabsList className="grid grid-cols-2 w-full mb-4 ">
+          <TabsList className="grid grid-cols-2 w-full my-4">
             <TabsTrigger value="generate">Generate</TabsTrigger>
             <TabsTrigger value="check">Version Check</TabsTrigger>
           </TabsList>

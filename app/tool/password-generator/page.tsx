@@ -77,11 +77,7 @@ export default function PasswordGenerator() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Generated Password</CardTitle>
-          <CardDescription>Your secure password will appear here</CardDescription>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="py-6 px-3">
           <div className="flex gap-2">
             <Input
               readOnly

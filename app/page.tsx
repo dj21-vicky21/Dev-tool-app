@@ -6,7 +6,7 @@ import { Palette, KeyRound, Lock, FileCode, FileJson, FileSpreadsheet, Search } 
 import Link from "next/link"
 import { useState } from "react"
 
-const tools = [
+export const tools = [
   {
     name: "Color Converter",
     description: "Convert colors between different formats (HEX, RGB, HSL)",
