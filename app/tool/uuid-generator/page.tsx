@@ -300,7 +300,11 @@ export default function UuidGenerator() {
                       placeholder="e.g., 123e4567-e89b-12d3-a456-426614174000"
                       className="font-mono text-sm"
                     />
-                    <Button onClick={checkUuidVersion} className="shrink-0">
+                    <Button
+                      onClick={checkUuidVersion}
+                      disabled={uuidToCheck.length === 0}
+                      className="shrink-0"
+                    >
                       <Search className="mr-2 h-4 w-4" />
                       Check
                     </Button>
