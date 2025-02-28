@@ -37,7 +37,7 @@ function hexToRgb(hex: string, alpha: number = 1) {
         r: parseInt(result[1], 16),
         g: parseInt(result[2], 16),
         b: parseInt(result[3], 16),
-        a: parseInt(result[4], 16) / 255, // Convert hex alpha to a value between 0 and 1
+        a: Number((parseInt(result[4], 16) / 255).toFixed(1)), // Convert hex alpha to a value between 0 and 1 with 1 decimal
       };
     }
   }
