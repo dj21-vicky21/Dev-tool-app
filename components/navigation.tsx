@@ -18,8 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
-import { tools } from "@/app/page";
-
+import {tools} from "../lib/tools"
 
 export function Navigation() {
   const { theme, setTheme } = useTheme();

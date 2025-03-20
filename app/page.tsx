@@ -2,54 +2,11 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Palette, KeyRound, Lock, FileCode, FileJson, FileSpreadsheet, Search } from "lucide-react"
+import { Search } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
+import {tools} from "../lib/tools"
 
-export const tools = [
-  {
-    name: "Color Converter",
-    description: "Convert colors between different formats (HEX, RGB, HSL)",
-    href: "/tool/color-converter",
-    icon: Palette
-  },
-  {
-    name: "JWT Decoder",
-    description: "Decode and verify JSON Web Tokens",
-    href: "/tool/jwt-decoder",
-    icon: KeyRound
-  },
-  {
-    name: "Password Generator",
-    description: "Generate secure, customizable passwords",
-    href: "/tool/password-generator",
-    icon: Lock
-  },
-  {
-    name: "Encode/Decode",
-    description: "Encode and decode strings using various methods",
-    href: "/tool/encode-decode",
-    icon: FileCode
-  },
-  {
-    name: "JSON to CSV",
-    description: "Convert JSON data to CSV format",
-    href: "/tool/json-to-csv",
-    icon: FileJson
-  },
-  {
-    name: "CSV to JSON",
-    description: "Convert CSV data to JSON format",
-    href: "/tool/csv-to-json",
-    icon: FileSpreadsheet
-  },
-  {
-    name: "UUID Generator",
-    description: "Generate unique UUIDs/GUIDs with custom formats",
-    href: "/tool/uuid-generator",
-    icon: FileSpreadsheet
-  }
-]
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("")
