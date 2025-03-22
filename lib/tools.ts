@@ -1,4 +1,4 @@
-import { Palette, KeyRound, Lock, FileCode, FileJson, FileSpreadsheet, QrCode } from "lucide-react"
+import { Palette, KeyRound, Lock, FileCode, FileJson, FileSpreadsheet, QrCode, Text } from "lucide-react"
 
 export const tools = [
   {
@@ -48,5 +48,11 @@ export const tools = [
     description: "Generate unique QR codes for URLs, text, or custom data",
     href: "/tool/qr-code-generator",
     icon: QrCode
-}
+  },
+  {
+    name: "Text Analyser",
+    description: "Analyze and extract insights from text data efficiently",
+    href: "/tool/text-analyzer",
+    icon: Text
+  }
 ]

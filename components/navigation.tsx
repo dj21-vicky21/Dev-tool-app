@@ -46,7 +46,7 @@ export function Navigation() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className=" grid grid-cols-2 gap-2">
-                {tools.map((tool) => (
+                {tools.slice(0, 8).map((tool) => (
                   <DropdownMenuItem key={tool.href} asChild>
                     <Link
                       href={tool.href}
