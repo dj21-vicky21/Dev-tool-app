@@ -1,4 +1,4 @@
-import { Palette, KeyRound, Lock, FileCode, FileJson, FileSpreadsheet, QrCode, Text, Code2 } from "lucide-react"
+import { Palette, KeyRound, Lock, FileCode, FileJson, FileSpreadsheet, QrCode, Text, Code2, Edit2 } from "lucide-react"
 
 export const tools = [
   {
@@ -60,5 +60,11 @@ export const tools = [
     description: "Format, validate, and analyze JSON data",
     href: "/tool/json-tool",
     icon: Code2
+  },
+  {
+    name: "SVG Color Editor",
+    description: "Edit SVG colors interactively",
+    href: "/tool/svg-color-editor",
+    icon: Edit2
   }
 ]

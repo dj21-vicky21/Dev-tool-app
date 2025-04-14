@@ -7,7 +7,7 @@ import {
   Moon,
   Sun,
   PenToolIcon as ToolIcon,
-  FileCode2,
+  FileCode2
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import {
