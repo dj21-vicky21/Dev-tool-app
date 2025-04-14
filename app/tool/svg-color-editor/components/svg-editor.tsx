@@ -1555,9 +1555,14 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
                   onClick={handleUndo}
                   disabled={currentHistoryIndex < 0}
                   title={`${modifierKey} Z`}
-                  className="h-8 w-8"
+                  className="h-8 w-8 relative group"
                 >
-                  ↩
+                  <span>↩</span>
+                  <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <kbd className="bg-primary text-primary-foreground text-[8px] px-1 rounded flex items-center">
+                      <span className="mr-0.5">{modifierKey}</span>Z
+                    </kbd>
+                  </div>
                 </Button>
                 <Button
                   variant="outline"
@@ -1565,9 +1570,14 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
                   onClick={handleRedo}
                   disabled={currentHistoryIndex >= colorHistory.length - 1}
                   title={`${modifierKey} Y`}
-                  className="h-8 w-8"
+                  className="h-8 w-8 relative group"
                 >
-                  ↪
+                  <span>↪</span>
+                  <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <kbd className="bg-primary text-primary-foreground text-[8px] px-1 rounded flex items-center">
+                      <span className="mr-0.5">{modifierKey}</span>Y
+                    </kbd>
+                  </div>
                 </Button>
               </div>
             </div>
