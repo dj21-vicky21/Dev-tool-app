@@ -1,4 +1,4 @@
-import { Palette, KeyRound, Lock, FileCode, FileJson, FileSpreadsheet, QrCode, Text } from "lucide-react"
+import { Palette, KeyRound, Lock, FileCode, FileJson, FileSpreadsheet, QrCode, Text, Code2 } from "lucide-react"
 
 export const tools = [
   {
@@ -54,5 +54,11 @@ export const tools = [
     description: "Analyze and extract insights from text data efficiently",
     href: "/tool/text-analyzer",
     icon: Text
+  },
+  {
+    name: "JSON Tool",
+    description: "Format, validate, and analyze JSON data",
+    href: "/tool/json-tool",
+    icon: Code2
   }
 ]
