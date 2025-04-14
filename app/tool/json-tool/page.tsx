@@ -189,6 +189,7 @@ export default function JsonTools() {
             />
             <div className="flex flex-wrap gap-2">
               <Button
+                disabled={!input.trim()}
                 variant="outline"
                 onClick={() => {
                   setIsCompact(!isCompact)
@@ -199,6 +200,7 @@ export default function JsonTools() {
                 {isCompact ? "Prettify" : "Compact"}
               </Button>
               <Button
+                disabled={!input.trim()}
                 variant="outline"
                 onClick={minifyJson}
               >
@@ -206,6 +208,7 @@ export default function JsonTools() {
                 Minify
               </Button>
               <Button
+                disabled={!input.trim()}
                 variant="outline"
                 onClick={copyToClipboard}
               >
@@ -213,6 +216,7 @@ export default function JsonTools() {
                 Copy
               </Button>
               <Button
+                disabled={!input.trim()}
                 variant="outline"
                 onClick={downloadJson}
               >
