@@ -1004,16 +1004,30 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
     if (isColorPickerDragging && pendingColorChange && pendingColorChange.elements.length > 0) {
       // Only add to history if the final color is different from the starting color
       const finalColor = getCurrentColor();
-      if (finalColor !== lastStableColorRef.current) {
+      // Normalize color format to prevent duplicates (e.g., "#123456" vs "#123456")
+      const normalizedFinalColor = finalColor ? finalColor.toLowerCase().replace(/#+/g, '#') : null;
+      const normalizedLastColor = lastStableColorRef.current ? lastStableColorRef.current.toLowerCase().replace(/#+/g, '#') : null;
+      
+      if (normalizedFinalColor !== normalizedLastColor) {
         console.log('Adding color change to history', {
           current: currentHistoryIndex,
           total: colorHistory.length,
           elementsChanged: pendingColorChange.elements.length
         });
         
+        // Before adding to history, normalize all color values in the pending change
+        const normalizedPendingChange = {
+          ...pendingColorChange,
+          elements: pendingColorChange.elements.map(el => ({
+            ...el,
+            previousColor: el.previousColor ? el.previousColor.toLowerCase().replace(/#+/g, '#') : null,
+            newColor: el.newColor ? el.newColor.toLowerCase().replace(/#+/g, '#') : null
+          }))
+        };
+        
         // Truncate forward history if we're not at the end
         const newHistory = colorHistory.slice(0, currentHistoryIndex + 1);
-        const updatedHistory = [...newHistory, pendingColorChange];
+        const updatedHistory = [...newHistory, normalizedPendingChange];
         setColorHistory(updatedHistory);
         setCurrentHistoryIndex(updatedHistory.length - 1);
         
@@ -1530,46 +1544,11 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
       {/* SVG Preview */}
       <Card className="md:col-span-2">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium">SVG Preview</h3>
-            <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
-              <div className="flex items-center gap-1 mr-4">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleZoom(1.2)}
-                  title={`${modifierKey} +`}
-                  className="h-8 w-8"
-                >
-                  +
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleZoom(0.8)}
-                  title={`${modifierKey} -`}
-                  className="h-8 w-8"
-                >
-                  -
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleReset}
-                  title={`${modifierKey} 0`}
-                >
-                  Reset View
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={clearSelection}
-                  className="ml-2"
-                >
-                  Clear
-            </Button>
-              </div>
-              <div className="flex items-center gap-1">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <div className="flex items-center">
+              <h3 className="text-lg font-medium whitespace-nowrap flex-shrink-0">SVG Preview</h3>
+              {/* Undo/Redo controls - inline with title on mobile */}
+              <div className="flex items-center gap-2 ml-3">
                 <Button
                   variant="outline"
                   size="icon"
@@ -1590,25 +1569,27 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
                 >
                   ↪
                 </Button>
-                <Button 
-                  onClick={handleResetColors} 
-                  variant="outline"
-                  size="sm"
-                  title="Reset all colors to original"
-                  className="ml-2"
-                  disabled={!isSvgModified}
-                >
-                  Reset Colors
-                </Button>
-                <Button 
-                  onClick={handleDownload} 
-                  variant="outline"
-                  disabled={!svgRef.current || (!isSvgModified && !!svgContent)}
-                  className="ml-2"
-                >
-                  Download
-                </Button>
               </div>
+            </div>
+            
+            {/* Reset Colors and Download - on second line for small screens */}
+            <div className="flex items-center gap-2">
+              <Button 
+                onClick={handleResetColors} 
+                variant="outline"
+                size="sm"
+                title="Reset all colors to original"
+                disabled={!isSvgModified}
+              >
+                Reset Colors
+              </Button>
+              <Button 
+                onClick={handleDownload} 
+                variant="outline"
+                disabled={!svgRef.current || (!isSvgModified && !!svgContent)}
+              >
+                Download
+              </Button>
             </div>
           </div>
           <div
@@ -1635,6 +1616,50 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
               user-select: none;
             }
           `}</style>
+           <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 w-full sm:w-auto">
+              <div className="flex flex-wrap items-center gap-2 justify-center mt-5">
+                {/* <div className="flex items-center gap-1"> */}
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleZoom(1.2)}
+                    title={`${modifierKey} +`}
+                    className="h-8 w-8"
+                  >
+                    +
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleZoom(0.8)}
+                    title={`${modifierKey} -`}
+                    className="h-8 w-8"
+                  >
+                    -
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleReset}
+                    title={`${modifierKey} 0`}
+                  >
+                    Reset View
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearSelection}
+                  >
+                    Clear
+                  </Button>
+                {/* </div> */}
+
+                {/* <div className="flex items-center gap-1"> */}
+                 
+                  
+                {/* </div> */}
+              </div>
+            </div>
         </CardContent>
       </Card>
 
@@ -1810,12 +1835,12 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
           <div className="mt-4 p-3 bg-muted rounded-md text-xs">
             <h4 className="font-medium mb-2">Keyboard & Touch Shortcuts</h4>
             <ul className="space-y-1 text-muted-foreground">
-              <li><kbd className="px-1.5 py-0.5 bg-background rounded border">{modifierKey} +</kbd> Zoom in</li>
-              <li><kbd className="px-1.5 py-0.5 bg-background rounded border">{modifierKey} -</kbd> Zoom out</li>
-              <li><kbd className="px-1.5 py-0.5 bg-background rounded border">{modifierKey} 0</kbd> Reset view</li>
-              <li><kbd className="px-1.5 py-0.5 bg-background rounded border">{modifierKey} Z</kbd> Undo</li>
-              <li><kbd className="px-1.5 py-0.5 bg-background rounded border">{modifierKey} Y</kbd> Redo</li>
-              <li><kbd className="px-1.5 py-0.5 bg-background rounded border">{modifierKey} + Mouse wheel</kbd> Zoom in/out</li>
+              <li className='hidden lg:flex items-center gap-1'><kbd className=" px-1.5 py-0.5 bg-background rounded border">{modifierKey} +</kbd> Zoom in</li> {" "}
+              <li className='hidden lg:flex items-center gap-1'><kbd className=" px-1.5 py-0.5 bg-background rounded border">{modifierKey} -</kbd> Zoom out</li>
+              <li className='hidden lg:flex items-center gap-1'><kbd className=" px-1.5 py-0.5 bg-background rounded border">{modifierKey} 0</kbd> Reset view</li>
+              <li className='hidden lg:flex items-center gap-1'><kbd className=" px-1.5 py-0.5 bg-background rounded border">{modifierKey} Z</kbd> Undo</li>
+              <li className='hidden lg:flex items-center gap-1'><kbd className=" px-1.5 py-0.5 bg-background rounded border">{modifierKey} Y</kbd> Redo</li>
+              <li className='hidden lg:flex items-center gap-1'><kbd className="px-1.5 py-0.5 bg-background rounded border">{modifierKey} + Mouse wheel</kbd> Zoom in/out</li>
               <li className="pt-1">
                 <span className="text-muted-foreground/80">Touch Gestures:</span>
               </li>
