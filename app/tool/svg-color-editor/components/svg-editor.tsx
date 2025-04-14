@@ -1603,6 +1603,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
             </div>
           </div>
           <div
+            id="svg-container"
             ref={svgContainerRef}
             className="border rounded-lg p-4 flex items-center justify-center bg-gray-50 dark:bg-gray-900 cursor-move"
             style={{ 
@@ -1619,7 +1620,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
           />
 
           <style jsx global>{`
-            svg {
+            #svg-container svg {
               width: 100%;
               height: 100%;
               min-height: 200px;

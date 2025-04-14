@@ -83,9 +83,7 @@ const ToastClose = React.forwardRef<
     toast-close=""
     {...props}
   >
-   <span className='relative size-4'>
-    X
-   </span>
+    <X className='h-4 w-4'/>
   </ToastPrimitives.Close>
 ));
 ToastClose.displayName = ToastPrimitives.Close.displayName;
