@@ -1554,7 +1554,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
                   size="icon"
                   onClick={handleUndo}
                   disabled={currentHistoryIndex < 0}
-                  title={`${modifierKey} Z`}
+                  // title={`${modifierKey} Z`}
                   className="h-8 w-8 relative group"
                 >
                   <span>↩</span>
@@ -1569,7 +1569,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
                   size="icon"
                   onClick={handleRedo}
                   disabled={currentHistoryIndex >= colorHistory.length - 1}
-                  title={`${modifierKey} Y`}
+                  // title={`${modifierKey} Y`}
                   className="h-8 w-8 relative group"
                 >
                   <span>↪</span>
@@ -1634,7 +1634,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
                     variant="outline"
                     size="icon"
                     onClick={() => handleZoom(1.2)}
-                    title={`${modifierKey} +`}
+                    // title={`${modifierKey} +`}
                     className="h-8 w-8"
                   >
                     +
@@ -1643,7 +1643,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
                     variant="outline"
                     size="icon"
                     onClick={() => handleZoom(0.8)}
-                    title={`${modifierKey} -`}
+                    // title={`${modifierKey} -`}
                     className="h-8 w-8"
                   >
                     -
@@ -1652,7 +1652,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
                     variant="outline"
                     size="sm"
                     onClick={handleReset}
-                    title={`${modifierKey} 0`}
+                    // title={`${modifierKey} 0`}
                   >
                     Reset View
                   </Button>
