@@ -469,7 +469,166 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
     }
   }, [originalElements, svgElements, selectedElement, colorHistory, currentHistoryIndex]);
 
-  // Fix: Reimplement undo/redo functions with improved state handling
+  // Add helper function to normalize color
+  const normalizeColor = useCallback((color: string | null) => {
+    if (!color) return null;
+    // Convert to lowercase and ensure only one hash symbol
+    return color.toLowerCase().replace(/#+/g, '#');
+  }, []);
+
+  // Determine if two colors are visually similar (within a small threshold)
+  const areColorsSimilar = useCallback((color1: string | null, color2: string | null) => {
+    if (!color1 || !color2) return color1 === color2;
+    
+    // Normalize both colors
+    const normalizedColor1 = normalizeColor(color1);
+    const normalizedColor2 = normalizeColor(color2);
+    
+    // If normalized values are the same, they're similar
+    if (normalizedColor1 === normalizedColor2) return true;
+    
+    // Convert hex to RGB to check color distance
+    const hexToRgb = (hex: string) => {
+      // Remove hash and handle shorthand hex
+      const cleanHex = hex.startsWith('#') ? hex.slice(1) : hex;
+      const fullHex = cleanHex.length === 3 
+        ? cleanHex.split('').map(c => c + c).join('') 
+        : cleanHex;
+      
+      const r = parseInt(fullHex.substr(0, 2), 16);
+      const g = parseInt(fullHex.substr(2, 2), 16);
+      const b = parseInt(fullHex.substr(4, 2), 16);
+      
+      return [r, g, b];
+    };
+    
+    try {
+      const rgb1 = hexToRgb(normalizedColor1 || '#000000');
+      const rgb2 = hexToRgb(normalizedColor2 || '#000000');
+      
+      // Calculate Euclidean distance
+      const distance = Math.sqrt(
+        Math.pow(rgb1[0] - rgb2[0], 2) +
+        Math.pow(rgb1[1] - rgb2[1], 2) +
+        Math.pow(rgb1[2] - rgb2[2], 2)
+      );
+      
+      // If distance is below threshold, colors are similar
+      // Lower threshold for more strict comparison
+      return distance < 2;
+    } catch {
+      // If any parsing fails, fall back to direct comparison
+      return normalizedColor1 === normalizedColor2;
+    }
+  }, [normalizeColor]);
+
+  // Completely reimplemented handleColorPickerDragEnd with enhanced color history management
+  const handleColorPickerDragEnd = useCallback(() => {
+    if (!isColorPickerDragging || !pendingColorChange || pendingColorChange.elements.length === 0) {
+      // Reset dragging state and exit if no real changes
+      setIsColorPickerDragging(false);
+      setPendingColorChange(null);
+      return;
+    }
+      
+    // Get the final color after dragging ends
+    const finalColor = getCurrentColor();
+    // Get the color when dragging started
+    const initialColor = lastStableColorRef.current;
+    
+    console.log('Drag ended:', { from: initialColor, to: finalColor });
+    
+    // Only store history if the final color is actually different from initial
+    if (finalColor !== initialColor) {
+      // Normalize colors for proper comparison
+      const normalizedFinalColor = normalizeColor(finalColor);
+      const normalizedInitialColor = normalizeColor(initialColor);
+      
+      // Double-check that colors are actually different after normalization
+      if (normalizedFinalColor !== normalizedInitialColor) {
+        console.log('Colors differ after normalization:', { 
+          from: normalizedInitialColor, 
+          to: normalizedFinalColor,
+          changed: pendingColorChange.elements.length 
+        });
+        
+        // Create a clean history entry with only the initial and final colors
+        // This avoids storing intermediate steps during dragging
+        const cleanHistoryEntry: ColorChange = {
+          timestamp: Date.now(),
+          elements: pendingColorChange.elements.map(el => ({
+            id: el.id,
+            property: el.property,
+            // Initial color is what we had before drag started
+            previousColor: normalizedInitialColor,
+            // Final color is the one we ended with after drag completed
+            newColor: normalizedFinalColor
+          }))
+        };
+        
+        // Truncate any forward history if needed
+        const newHistory = colorHistory.slice(0, currentHistoryIndex + 1);
+        
+        // Compare with last history entry to avoid duplicates
+        let shouldAddToHistory = true;
+        if (newHistory.length > 0) {
+          const lastEntry = newHistory[newHistory.length - 1];
+          
+          // Check if this is essentially the same change as the previous one
+          if (lastEntry.elements.length === cleanHistoryEntry.elements.length) {
+            // Only compare element IDs and final colors for duplication check
+            const isDuplicate = cleanHistoryEntry.elements.every((el, idx) => {
+              const prevEl = lastEntry.elements[idx];
+              return (
+                el.id === prevEl.id && 
+                el.property === prevEl.property && 
+                areColorsSimilar(el.newColor, prevEl.newColor)
+              );
+            });
+            
+            if (isDuplicate) {
+              console.log('Skipping duplicate history entry');
+              shouldAddToHistory = false;
+            }
+          }
+        }
+        
+        // Add to history if not a duplicate
+        if (shouldAddToHistory) {
+          const updatedHistory = [...newHistory, cleanHistoryEntry];
+          setColorHistory(updatedHistory);
+          setCurrentHistoryIndex(updatedHistory.length - 1);
+          setIsSvgModified(true);
+          
+          // Show notification about the color change
+          debouncedToast(
+            "Color updated",
+            pendingColorChange.elements.length > 1 
+              ? <div className="flex items-center">
+                  <span>Updated {pendingColorChange.elements.length} elements to </span>
+                  <div className="h-4 w-4 mx-1 inline-block border" style={{ backgroundColor: finalColor || 'transparent' }}></div>
+                  <code className="bg-secondary text-secondary-foreground px-1 rounded">{finalColor || 'transparent'}</code>
+                </div>
+              : <div className="flex items-center">
+                  <span>Updated {pendingColorChange.elements[0].property} to </span>
+                  <div className="h-4 w-4 mx-1 inline-block border" style={{ backgroundColor: finalColor || 'transparent' }}></div>
+                  <code className="bg-secondary text-secondary-foreground px-1 rounded">{finalColor || 'transparent'}</code>
+                </div>
+          );
+        }
+      } else {
+        console.log('Colors too similar after normalization, skipping history entry');
+      }
+    } else {
+      console.log('No actual color change detected, skipping history entry');
+    }
+    
+    // Always reset dragging state
+    setIsColorPickerDragging(false);
+    setPendingColorChange(null);
+  }, [isColorPickerDragging, pendingColorChange, colorHistory, currentHistoryIndex, getCurrentColor, lastStableColorRef, normalizeColor, areColorsSimilar, debouncedToast]);
+
+  // Improved undo with better color comparison
   const handleUndo = useCallback(() => {
     if (currentHistoryIndex >= 0 && colorHistory.length > 0) {
       console.log(`Undoing change ${currentHistoryIndex} of ${colorHistory.length}`);
@@ -478,7 +637,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
       // Create a copy of the SVG elements to modify
       const updatedElements = [...svgElements];
       
-      // Group elements by id to avoid applying multiple changes to the same element in the wrong order
+      // Process changes by element to ensure consistent state
       const elementChangeMap = new Map<string, {
         id: string,
         changes: {
@@ -505,32 +664,51 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
         }
       });
       
-      // Now apply grouped changes to each element
+      // Track whether we're undoing to original state
+      const isUndoToOriginal = currentHistoryIndex === 0;
+      
+      // Apply grouped changes to each element
       elementChangeMap.forEach((elementChanges, id) => {
         const elementIndex = updatedElements.findIndex(el => el.id === id);
         if (elementIndex !== -1) {
           const element = updatedElements[elementIndex];
           const updatedElement = { ...element };
           
+          // Get original colors if we're undoing to initial state
+          const originalColors = isUndoToOriginal ? originalElements.get(id) : null;
+          
           // Apply each property change to this element
           elementChanges.changes.forEach(changeItem => {
-            // Update the DOM element
-            element.element.setAttribute(changeItem.property, changeItem.previousColor || 'none');
+            // For the first undo, prioritize restoring to original colors
+            let colorToRestore = changeItem.previousColor;
             
-            // Update our state object
+            // If undoing to initial state, use original colors when available
+            if (isUndoToOriginal && originalColors) {
+              if (changeItem.property === 'fill' && originalColors.fill !== null) {
+                colorToRestore = originalColors.fill;
+              } else if (changeItem.property === 'stroke' && originalColors.stroke !== null) {
+                colorToRestore = originalColors.stroke;
+              }
+            }
+            
+            // Update the DOM element
+            const colorValue = colorToRestore || 'none';
+            element.element.setAttribute(changeItem.property, colorValue);
+            
+            // Then update our state object
             if (changeItem.property === 'fill') {
-              updatedElement.fill = changeItem.previousColor;
+              updatedElement.fill = colorToRestore;
             } else {
-              updatedElement.stroke = changeItem.previousColor;
+              updatedElement.stroke = colorToRestore;
             }
           });
           
-          // Replace the element in our array
+          // Replace the element in our state array
           updatedElements[elementIndex] = updatedElement;
         }
       });
       
-      // Update state with all changes at once
+      // Update state with all changes at once for better performance
       setSvgElements(updatedElements);
       
       // Update the selected element if it's part of the change
@@ -538,38 +716,49 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
         const changedElement = change.elements.find(item => item.id === selectedElement.id);
         if (changedElement) {
           const updatedElement = { ...selectedElement };
-          if (changedElement.property === 'fill') {
-            updatedElement.fill = changedElement.previousColor;
+          
+          // For the first undo, prioritize restoring to original colors
+          if (isUndoToOriginal) {
+            const originalColors = originalElements.get(selectedElement.id);
+            if (originalColors) {
+              if (changedElement.property === 'fill') {
+                updatedElement.fill = originalColors.fill;
+              } else {
+                updatedElement.stroke = originalColors.stroke;
+              }
+            } else {
+              if (changedElement.property === 'fill') {
+                updatedElement.fill = changedElement.previousColor;
+              } else {
+                updatedElement.stroke = changedElement.previousColor;
+              }
+            }
           } else {
-            updatedElement.stroke = changedElement.previousColor;
+            if (changedElement.property === 'fill') {
+              updatedElement.fill = changedElement.previousColor;
+            } else {
+              updatedElement.stroke = changedElement.previousColor;
+            }
           }
+          
           setSelectedElement(updatedElement);
         }
       }
       
-      // If this was a palette color change, update the selected palette color
+      // Handle palette color changes
       if (change.elements.length > 1) {
         // Detect if this was a palette color change
-        // We'll check if multiple elements were changed to the same color
-        const samePropertyChanges = change.elements.filter(item => {
-          // Group by property (fill or stroke)
-          return item.property === change.elements[0].property;
-        });
+        const samePropertyChanges = change.elements.filter(item => 
+          item.property === change.elements[0].property
+        );
         
         if (samePropertyChanges.length > 1) {
-          // Check if all previous colors are the same
-          const allPreviousColors = new Set(samePropertyChanges.map(item => item.previousColor));
-          const allNewColors = new Set(samePropertyChanges.map(item => item.newColor));
+          const previousColor = samePropertyChanges[0].previousColor;
+          const newColor = samePropertyChanges[0].newColor;
           
-          // If exactly one previous color and one new color for multiple elements,
-          // this was likely a palette color change
-          if (allPreviousColors.size === 1 && allNewColors.size === 1) {
-            const previousColor = samePropertyChanges[0].previousColor;
-            // If we're currently showing this palette color (the "new" color),
-            // switch to the previous color
-            if (selectedPaletteColor === samePropertyChanges[0].newColor) {
-              setSelectedPaletteColor(previousColor);
-            }
+          // If we're currently showing this palette color, switch to the previous one
+          if (selectedPaletteColor && areColorsSimilar(selectedPaletteColor, newColor)) {
+            setSelectedPaletteColor(previousColor);
           }
         }
       }
@@ -577,29 +766,37 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
       // Update the history index
       setCurrentHistoryIndex(currentHistoryIndex - 1);
 
-      // Get the color we're undoing to for notification
-      const primaryPreviousColor = change.elements[0].previousColor;
-      
+      // Check if we're back to original state
+      if (currentHistoryIndex - 1 < 0) {
+        setIsSvgModified(false);
+        console.log('Fully undone to original state');
+      } else {
+        // Otherwise recheck if any elements still differ from original
+        const stillModified = checkForModifications();
+        setIsSvgModified(stillModified);
+        console.log('Undone one step, SVG modified:', stillModified);
+      }
+
       toast({
         title: "Undo",
         description: change.elements.length > 1 
           ? <div className="flex items-center flex-wrap">
               <span>Undid changes to {change.elements.length} elements</span>
-              {primaryPreviousColor && (
+              {change.elements[0].previousColor && (
                 <div className="flex items-center ml-1">
                   <span>to </span>
-                  <div className="h-4 w-4 mx-1 inline-block border" style={{ backgroundColor: primaryPreviousColor || 'transparent' }}></div>
-                  <code className="bg-secondary text-secondary-foreground px-1 rounded text-xs">{primaryPreviousColor}</code>
+                  <div className="h-4 w-4 mx-1 inline-block border" style={{ backgroundColor: change.elements[0].previousColor || 'transparent' }}></div>
+                  <code className="bg-secondary text-secondary-foreground px-1 rounded text-xs">{change.elements[0].previousColor}</code>
                 </div>
               )}
             </div>
           : <div className="flex items-center flex-wrap">
               <span>Undid {change.elements[0].property} change </span>
-              {primaryPreviousColor && (
+              {change.elements[0].previousColor && (
                 <div className="flex items-center ml-1">
                   <span>to </span>
-                  <div className="h-4 w-4 mx-1 inline-block border" style={{ backgroundColor: primaryPreviousColor || 'transparent' }}></div>
-                  <code className="bg-secondary text-secondary-foreground px-1 rounded text-xs">{primaryPreviousColor}</code>
+                  <div className="h-4 w-4 mx-1 inline-block border" style={{ backgroundColor: change.elements[0].previousColor || 'transparent' }}></div>
+                  <code className="bg-secondary text-secondary-foreground px-1 rounded text-xs">{change.elements[0].previousColor}</code>
                 </div>
               )}
             </div>,
@@ -612,7 +809,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
         variant: "default"
       });
     }
-  }, [colorHistory, currentHistoryIndex, svgElements, selectedElement, selectedPaletteColor]);
+  }, [colorHistory, currentHistoryIndex, svgElements, selectedElement, selectedPaletteColor, checkForModifications, areColorsSimilar, originalElements]);
 
   // Fix: Reimplement redo with improved state handling
   const handleRedo = useCallback(() => {
@@ -623,7 +820,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
       // Create a copy of the SVG elements to modify
       const updatedElements = [...svgElements];
       
-      // Group elements by id to avoid applying multiple changes to the same element in the wrong order
+      // Group elements by id for consistent processing
       const elementChangeMap = new Map<string, {
         id: string,
         changes: {
@@ -650,7 +847,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
         }
       });
       
-      // Now apply grouped changes to each element
+      // Apply grouped changes to each element
       elementChangeMap.forEach((elementChanges, id) => {
         const elementIndex = updatedElements.findIndex(el => el.id === id);
         if (elementIndex !== -1) {
@@ -659,10 +856,11 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
           
           // Apply each property change to this element
           elementChanges.changes.forEach(changeItem => {
-            // Update the DOM element
-            element.element.setAttribute(changeItem.property, changeItem.newColor || 'none');
+            // Update the DOM element first
+            const colorValue = changeItem.newColor || 'none';
+            element.element.setAttribute(changeItem.property, colorValue);
             
-            // Update our state object
+            // Then update our state object
             if (changeItem.property === 'fill') {
               updatedElement.fill = changeItem.newColor;
             } else {
@@ -695,26 +893,17 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
       // If this was a palette color change, update the selected palette color
       if (change.elements.length > 1) {
         // Detect if this was a palette color change
-        // We'll check if multiple elements were changed to the same color
-        const samePropertyChanges = change.elements.filter(item => {
-          // Group by property (fill or stroke)
-          return item.property === change.elements[0].property;
-        });
+        const samePropertyChanges = change.elements.filter(item => 
+          item.property === change.elements[0].property
+        );
         
         if (samePropertyChanges.length > 1) {
-          // Check if all new colors are the same
-          const allNewColors = new Set(samePropertyChanges.map(item => item.newColor));
-          const allPreviousColors = new Set(samePropertyChanges.map(item => item.previousColor));
+          const newColor = samePropertyChanges[0].newColor;
+          const previousColor = samePropertyChanges[0].previousColor;
           
-          // If exactly one previous color and one new color for multiple elements,
-          // this was likely a palette color change
-          if (allPreviousColors.size === 1 && allNewColors.size === 1) {
-            const newColor = samePropertyChanges[0].newColor;
-            // If we're currently showing the previous palette color,
-            // switch to the new color
-            if (selectedPaletteColor === samePropertyChanges[0].previousColor) {
-              setSelectedPaletteColor(newColor);
-            }
+          // If we're currently showing the previous palette color, switch to the new one
+          if (selectedPaletteColor && areColorsSimilar(selectedPaletteColor, previousColor)) {
+            setSelectedPaletteColor(newColor);
           }
         }
       }
@@ -722,29 +911,31 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
       // Update the history index
       setCurrentHistoryIndex(currentHistoryIndex + 1);
 
-      // Get the color we're redoing to for notification
-      const primaryNewColor = change.elements[0].newColor;
-      
+      // Update modified state
+      const stillModified = checkForModifications();
+      setIsSvgModified(stillModified);
+      console.log('Redone one step, SVG modified:', stillModified);
+
       toast({
         title: "Redo",
         description: change.elements.length > 1 
           ? <div className="flex items-center flex-wrap">
               <span>Redid changes to {change.elements.length} elements</span>
-              {primaryNewColor && (
+              {change.elements[0].newColor && (
                 <div className="flex items-center ml-1">
                   <span>to </span>
-                  <div className="h-4 w-4 mx-1 inline-block border" style={{ backgroundColor: primaryNewColor || 'transparent' }}></div>
-                  <code className="bg-secondary text-secondary-foreground px-1 rounded text-xs">{primaryNewColor}</code>
+                  <div className="h-4 w-4 mx-1 inline-block border" style={{ backgroundColor: change.elements[0].newColor || 'transparent' }}></div>
+                  <code className="bg-secondary text-secondary-foreground px-1 rounded text-xs">{change.elements[0].newColor}</code>
                 </div>
               )}
             </div>
           : <div className="flex items-center flex-wrap">
               <span>Redid {change.elements[0].property} change </span>
-              {primaryNewColor && (
+              {change.elements[0].newColor && (
                 <div className="flex items-center ml-1">
                   <span>to </span>
-                  <div className="h-4 w-4 mx-1 inline-block border" style={{ backgroundColor: primaryNewColor || 'transparent' }}></div>
-                  <code className="bg-secondary text-secondary-foreground px-1 rounded text-xs">{primaryNewColor}</code>
+                  <div className="h-4 w-4 mx-1 inline-block border" style={{ backgroundColor: change.elements[0].newColor || 'transparent' }}></div>
+                  <code className="bg-secondary text-secondary-foreground px-1 rounded text-xs">{change.elements[0].newColor}</code>
                 </div>
               )}
             </div>,
@@ -757,7 +948,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
         variant: "default"
       });
     }
-  }, [colorHistory, currentHistoryIndex, svgElements, selectedElement, selectedPaletteColor]);
+  }, [colorHistory, currentHistoryIndex, svgElements, selectedElement, selectedPaletteColor, checkForModifications, areColorsSimilar]);
 
   // Add keyboard shortcuts
   useEffect(() => {
@@ -800,6 +991,67 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [handleZoom, handleReset, handleUndo, handleRedo]);
+
+  // Improve the global event listeners to ensure we catch all drag end events
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      if (isColorPickerDragging) {
+        handleColorPickerDragEnd();
+      }
+    };
+    
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // If Escape key is pressed while dragging, cancel the color change
+      if (e.key === 'Escape' && isColorPickerDragging) {
+        setIsColorPickerDragging(false);
+        setPendingColorChange(null);
+        
+        // Restore original colors
+        if (lastStableColorRef.current && selectedElement) {
+          if (activeProperty === 'fill') {
+            selectedElement.element.setAttribute('fill', lastStableColorRef.current);
+            setSelectedElement({
+              ...selectedElement,
+              fill: lastStableColorRef.current
+            });
+          } else if (activeProperty === 'stroke') {
+            selectedElement.element.setAttribute('stroke', lastStableColorRef.current);
+            setSelectedElement({
+              ...selectedElement,
+              stroke: lastStableColorRef.current
+            });
+          }
+        } else if (lastStableColorRef.current && selectedPaletteColor) {
+          // Restore all elements with the palette color
+          const updatedElements = svgElements.map(el => {
+            const updatedEl = { ...el };
+            if (el.fill === selectedPaletteColor) {
+              el.element.setAttribute('fill', lastStableColorRef.current!);
+              updatedEl.fill = lastStableColorRef.current;
+            }
+            if (el.stroke === selectedPaletteColor) {
+              el.element.setAttribute('stroke', lastStableColorRef.current!);
+              updatedEl.stroke = lastStableColorRef.current;
+            }
+            return updatedEl;
+          });
+          
+          setSvgElements(updatedElements);
+          setSelectedPaletteColor(lastStableColorRef.current);
+        }
+      }
+    };
+    
+    document.addEventListener('mouseup', handleGlobalMouseUp);
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    window.addEventListener('blur', handleGlobalMouseUp);
+    
+    return () => {
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+      document.removeEventListener('keydown', handleGlobalKeyDown);
+      window.removeEventListener('blur', handleGlobalMouseUp);
+    };
+  }, [isColorPickerDragging, handleColorPickerDragEnd, selectedElement, selectedPaletteColor, activeProperty, svgElements, lastStableColorRef]);
 
   // Add a separate function to handle palette color changes
   const handlePaletteColorChange = useCallback((paletteColor: string, newColor: string) => {
@@ -875,14 +1127,26 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
   const handleColorChange = (color: string) => {
     // If we have a palette color selected, use the palette handler
     if (selectedPaletteColor) {
+      // Only record the initial color when dragging starts
+      if (!isColorPickerDragging) {
+        console.log('Starting drag from palette color:', selectedPaletteColor);
+        setIsColorPickerDragging(true);
+        lastStableColorRef.current = selectedPaletteColor;
+      }
       handlePaletteColorChange(selectedPaletteColor, color);
       return;
     }
     
-    // Otherwise, handle single element change as before
-    if (!isColorPickerDragging) {
+    // Otherwise, handle single element change
+    if (!isColorPickerDragging && selectedElement) {
+      // Record the current element color before any changes
+      const currentColor = activeProperty === 'fill' 
+        ? selectedElement.fill 
+        : selectedElement.stroke;
+      
+      console.log('Starting drag from element color:', currentColor);
       setIsColorPickerDragging(true);
-      lastStableColorRef.current = getCurrentColor();
+      lastStableColorRef.current = currentColor;
     }
     
     // Apply visual changes immediately but don't store in history yet
@@ -890,6 +1154,10 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
       // Single element color change - update visuals only
       const { element } = selectedElement;
       const updatedElement = { ...selectedElement };
+
+      // Ensure we have a valid previousColor
+      const initialColor = lastStableColorRef.current || 
+        (activeProperty === 'fill' ? selectedElement.fill : selectedElement.stroke);
 
       if (activeProperty === 'fill' && selectedElement.fill !== color) {
         element.setAttribute('fill', color);
@@ -901,7 +1169,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
             elements: [{
               id: selectedElement.id,
               property: 'fill',
-              previousColor: selectedElement.fill,
+              previousColor: initialColor, // Use the stored initial color
               newColor: color
             }],
             timestamp: Date.now()
@@ -921,13 +1189,13 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
                 {
                   id: selectedElement.id,
                   property: 'fill',
-                  previousColor: selectedElement.fill,
+                  previousColor: initialColor, // Use the stored initial color
                   newColor: color
                 }
               ]
             }));
           } else {
-            // Update existing change with new color
+            // Update existing change with new color without changing the previous color
             setPendingColorChange(prev => {
               const updatedElements = [...prev!.elements];
               updatedElements[existingChangeIndex] = {
@@ -951,7 +1219,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
             elements: [{
               id: selectedElement.id,
               property: 'stroke',
-              previousColor: selectedElement.stroke,
+              previousColor: initialColor, // Use the stored initial color
               newColor: color
             }],
             timestamp: Date.now()
@@ -969,7 +1237,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
                 {
                   id: selectedElement.id,
                   property: 'stroke',
-                  previousColor: selectedElement.stroke,
+                  previousColor: initialColor, // Use the stored initial color
                   newColor: color
                 }
               ]
@@ -998,125 +1266,6 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
       );
     }
   };
-
-  // Modified handleColorPickerDragEnd to also update the modified state
-  const handleColorPickerDragEnd = useCallback(() => {
-    if (isColorPickerDragging && pendingColorChange && pendingColorChange.elements.length > 0) {
-      // Only add to history if the final color is different from the starting color
-      const finalColor = getCurrentColor();
-      // Normalize color format to prevent duplicates (e.g., "#123456" vs "#123456")
-      const normalizedFinalColor = finalColor ? finalColor.toLowerCase().replace(/#+/g, '#') : null;
-      const normalizedLastColor = lastStableColorRef.current ? lastStableColorRef.current.toLowerCase().replace(/#+/g, '#') : null;
-      
-      if (normalizedFinalColor !== normalizedLastColor) {
-        console.log('Adding color change to history', {
-          current: currentHistoryIndex,
-          total: colorHistory.length,
-          elementsChanged: pendingColorChange.elements.length
-        });
-        
-        // Before adding to history, normalize all color values in the pending change
-        const normalizedPendingChange = {
-          ...pendingColorChange,
-          elements: pendingColorChange.elements.map(el => ({
-            ...el,
-            previousColor: el.previousColor ? el.previousColor.toLowerCase().replace(/#+/g, '#') : null,
-            newColor: el.newColor ? el.newColor.toLowerCase().replace(/#+/g, '#') : null
-          }))
-        };
-        
-        // Truncate forward history if we're not at the end
-        const newHistory = colorHistory.slice(0, currentHistoryIndex + 1);
-        const updatedHistory = [...newHistory, normalizedPendingChange];
-        setColorHistory(updatedHistory);
-        setCurrentHistoryIndex(updatedHistory.length - 1);
-        
-        // Mark SVG as modified
-        setIsSvgModified(true);
-        
-        // Show notification about the change
-        debouncedToast(
-          "Color updated",
-          pendingColorChange.elements.length > 1 
-            ? <div className="flex items-center">
-                <span>Updated {pendingColorChange.elements.length} elements to </span>
-                <div className="h-4 w-4 mx-1 inline-block border" style={{ backgroundColor: finalColor || 'transparent' }}></div>
-                <code className="bg-secondary text-secondary-foreground px-1 rounded">{finalColor || 'transparent'}</code>
-              </div>
-            : <div className="flex items-center">
-                <span>Updated {pendingColorChange.elements[0].property} to </span>
-                <div className="h-4 w-4 mx-1 inline-block border" style={{ backgroundColor: finalColor || 'transparent' }}></div>
-                <code className="bg-secondary text-secondary-foreground px-1 rounded">{finalColor || 'transparent'}</code>
-              </div>
-        );
-      }
-    }
-    
-    // Reset dragging state
-    setIsColorPickerDragging(false);
-    setPendingColorChange(null);
-  }, [isColorPickerDragging, pendingColorChange, colorHistory, currentHistoryIndex, getCurrentColor, lastStableColorRef, debouncedToast]);
-
-  // Improve the global event listeners to ensure we catch all drag end events
-  useEffect(() => {
-    const handleGlobalMouseUp = () => {
-      if (isColorPickerDragging) {
-        handleColorPickerDragEnd();
-      }
-    };
-    
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      // If Escape key is pressed while dragging, cancel the color change
-      if (e.key === 'Escape' && isColorPickerDragging) {
-        setIsColorPickerDragging(false);
-        setPendingColorChange(null);
-        
-        // Restore original colors
-        if (lastStableColorRef.current && selectedElement) {
-          if (activeProperty === 'fill') {
-            selectedElement.element.setAttribute('fill', lastStableColorRef.current);
-      setSelectedElement({
-        ...selectedElement,
-              fill: lastStableColorRef.current
-      });
-    } else if (activeProperty === 'stroke') {
-            selectedElement.element.setAttribute('stroke', lastStableColorRef.current);
-      setSelectedElement({
-        ...selectedElement,
-              stroke: lastStableColorRef.current
-            });
-          }
-        } else if (lastStableColorRef.current && selectedPaletteColor) {
-          // Restore all elements with the palette color
-          const updatedElements = svgElements.map(el => {
-            const updatedEl = { ...el };
-            if (el.fill === selectedPaletteColor) {
-              el.element.setAttribute('fill', lastStableColorRef.current!);
-              updatedEl.fill = lastStableColorRef.current;
-            }
-            if (el.stroke === selectedPaletteColor) {
-              el.element.setAttribute('stroke', lastStableColorRef.current!);
-              updatedEl.stroke = lastStableColorRef.current;
-            }
-            return updatedEl;
-          });
-          
-          setSvgElements(updatedElements);
-          setSelectedPaletteColor(lastStableColorRef.current);
-        }
-      }
-    };
-    
-    document.addEventListener('mouseup', handleGlobalMouseUp);
-    document.addEventListener('keydown', handleGlobalKeyDown);
-    window.addEventListener('blur', handleGlobalMouseUp);
-    
-    return () => {
-      document.removeEventListener('mouseup', handleGlobalMouseUp);
-      document.removeEventListener('keydown', handleGlobalKeyDown);
-      window.removeEventListener('blur', handleGlobalMouseUp);
-    };
-  }, [isColorPickerDragging, handleColorPickerDragEnd, selectedElement, selectedPaletteColor, activeProperty, svgElements, lastStableColorRef]);
 
   // Modify handleElementSelect to clear palette selection
   const handleElementSelect = useCallback((element: ColorableElement) => {
@@ -1401,7 +1550,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
 
   // Add a function just for highlighting without selection
   const highlightElement = useCallback((element: ColorableElement) => {
-    // Clear all previous highlights first
+    // Clear all previous highlights
     const allHighlighted = svgRef.current?.querySelectorAll('.selected-element');
     allHighlighted?.forEach(el => {
       el.classList.remove('selected-element');
