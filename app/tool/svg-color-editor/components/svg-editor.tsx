@@ -1866,6 +1866,31 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
               min-height: 200px;
               user-select: none;
             }
+            
+            .custom-scrollbar::-webkit-scrollbar {
+              width: 8px;
+            }
+            
+            .custom-scrollbar::-webkit-scrollbar-track {
+              background: transparent;
+            }
+            
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+              background-color: rgba(0, 0, 0, 0.2);
+              border-radius: 4px;
+            }
+            
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+              background-color: rgba(0, 0, 0, 0.4);
+            }
+            
+            .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+              background-color: rgba(255, 255, 255, 0.2);
+            }
+            
+            .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+              background-color: rgba(255, 255, 255, 0.4);
+            }
           `}</style>
            <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 w-full sm:w-auto">
               <div className="flex flex-wrap items-center gap-2 justify-center mt-5">
@@ -2042,30 +2067,30 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
                   {/* Dynamic Color Palette */}
                   {svgColors.length > 0 && (
                     <div>
-                  <Label className="mb-1 block">SVG Colors</Label>
+                      <Label className="mb-1 block">SVG Colors</Label>
                       <p className="text-xs text-muted-foreground mb-2">
-                    Click a color to change all elements using this color:
+                        Click a color to change all elements using this color:
                       </p>
-                      <div className="grid grid-cols-5 gap-2">
+                      <div className="grid grid-cols-5 gap-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar p-2">
                         {svgColors.map((color) => (
                           <button
                             key={color}
-                        className={`h-8 w-full rounded border hover:ring-2 hover:ring-offset-1 hover:ring-primary transition-all relative group ${
-                          selectedPaletteColor === color ? 'ring-2 ring-primary ring-offset-1' : 
-                          (selectedElement && getActiveElementColor() === color) ? 'ring-2 ring-primary ring-offset-1' : ''
-                        }`}
+                            className={`h-8 w-full rounded border hover:ring-2 hover:ring-offset-1 hover:ring-primary transition-all relative group ${
+                              selectedPaletteColor === color ? 'ring-2 ring-primary ring-offset-1' : 
+                              (selectedElement && getActiveElementColor() === color) ? 'ring-2 ring-primary ring-offset-1' : ''
+                            }`}
                             style={{ backgroundColor: color }}
-                        onClick={() => {
-                          // Clear any highlighted elements
-                          const allHighlighted = svgRef.current?.querySelectorAll('.selected-element');
-                          allHighlighted?.forEach(el => {
-                            el.classList.remove('selected-element');
-                          });
-                          
-                          setSelectedElement(null);
-                          setSelectedPaletteColor(color);
-                        }}
-                        aria-label={`Select elements using ${color}`}
+                            onClick={() => {
+                              // Clear any highlighted elements
+                              const allHighlighted = svgRef.current?.querySelectorAll('.selected-element');
+                              allHighlighted?.forEach(el => {
+                                el.classList.remove('selected-element');
+                              });
+                              
+                              setSelectedElement(null);
+                              setSelectedPaletteColor(color);
+                            }}
+                            aria-label={`Select elements using ${color}`}
                           >
                             <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/60 text-white text-[9px] font-mono rounded">
                               {color}
