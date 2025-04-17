@@ -89,6 +89,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
   
   // Add state for zoom and pan
   const [zoom, setZoom] = useState(1);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -122,6 +123,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
   const PAN_SENSITIVITY = 0.5;
 
   // Calculate the actual pan sensitivity based on viewBox scale
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const calculatePanSensitivity = useCallback(() => {
     if (!svgRef.current) return PAN_SENSITIVITY;
     
@@ -135,7 +137,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
     // Adjust sensitivity based on the scale factor
     // This ensures consistent panning regardless of SVG size
     return PAN_SENSITIVITY * scaleFactor;
-  }, [viewBox.width]);
+  }, [viewBox, svgRef]);
 
   // Get the current color based on the active property or palette selection
   const getCurrentColor = useCallback(() => {
@@ -152,6 +154,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
 
   // Add state to track if we're panning
   const [isPanning, setIsPanning] = useState(false);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [moveDistance, setMoveDistance] = useState({ x: 0, y: 0 });
 
   // Add debounced toast function that supports React elements
@@ -324,7 +327,8 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
   }, [svgContent]);
 
   // Add this function to highlight elements with a specific color
-  const highlightElementsByColor = (color: string | null) => {
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const highlightElementsByColor = useCallback((color: string | null) => {
     // Clear all previous highlights
     const allHighlighted = svgRef.current?.querySelectorAll('.selected-element');
     allHighlighted?.forEach(el => {
@@ -339,7 +343,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
         }
       });
     }
-  };
+  }, [svgRef, svgElements]);
 
   // Handle zoom - define with useCallback for dependency resolution
   const handleZoom = useCallback((factor: number) => {
