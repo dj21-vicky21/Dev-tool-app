@@ -1,11 +1,25 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { HexColorPicker } from 'react-colorful';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Pipette } from "lucide-react";
+
+// Define EyeDropper API types
+interface EyeDropperAPI {
+  open: () => Promise<{sRGBHex: string}>;
+}
+
+declare global {
+  interface Window {
+    EyeDropper?: {
+      new (): EyeDropperAPI;
+    };
+  }
+}
 
 interface ColorPickerProps {
   color: string;
@@ -16,6 +30,13 @@ export function ColorPicker({ color, onChange }: ColorPickerProps) {
   const [hexValue, setHexValue] = useState(color || '#000000');
   const [isOpen, setIsOpen] = useState(false);
   const [isValid, setIsValid] = useState(true);
+  const [isEyeDropperSupported, setIsEyeDropperSupported] = useState(false);
+  const [isPickingColor, setIsPickingColor] = useState(false);
+
+  // Check for EyeDropper API support
+  useEffect(() => {
+    setIsEyeDropperSupported(typeof window !== 'undefined' && 'EyeDropper' in window);
+  }, []);
 
   // Update local state when prop changes
   useEffect(() => {
@@ -103,6 +124,32 @@ export function ColorPicker({ color, onChange }: ColorPickerProps) {
     }
   };
 
+  // Handle eyedropper color picking
+  const handleEyeDropper = useCallback(async () => {
+    if (!window.EyeDropper) return;
+
+    try {
+      setIsPickingColor(true);
+      
+      // Close the color picker popover if it's open
+      if (isOpen) setIsOpen(false);
+      
+      const eyeDropper = new window.EyeDropper();
+      const result = await eyeDropper.open();
+      
+      // Update with the picked color
+      const pickedColor = result.sRGBHex;
+      setHexValue(pickedColor);
+      setIsValid(true);
+      onChange(pickedColor);
+    } catch (error) {
+      // User likely canceled the picker
+      console.log("Eye dropper was canceled or failed:", error);
+    } finally {
+      setIsPickingColor(false);
+    }
+  }, [isOpen, onChange]);
+
   return (
     <div className="flex flex-col space-y-2">
       <Label>Color</Label>
@@ -134,6 +181,24 @@ export function ColorPicker({ color, onChange }: ColorPickerProps) {
           placeholder="#000000"
           className={!isValid ? 'border-red-500' : ''}
         />
+        
+        {isEyeDropperSupported && (
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-8 w-8 relative"
+            onClick={handleEyeDropper}
+            disabled={isPickingColor}
+            title="Pick color from screen"
+          >
+            <Pipette size={16} />
+            {isPickingColor && (
+              <span className="absolute inset-0 flex items-center justify-center bg-background/80">
+                <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full"></div>
+              </span>
+            )}
+          </Button>
+        )}
       </div>
       {!isValid && (
         <p className="text-xs text-red-500">
