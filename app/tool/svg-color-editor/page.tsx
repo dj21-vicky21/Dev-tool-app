@@ -1,5 +1,11 @@
 import AppContent from "./components/app-content";
 import { Badge } from "@/components/ui/badge"
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "SVG Color Editor | Dev Tools",
+  description: "Edit SVG colors with ease",
+};
 
 export default function Home() {
   return (
