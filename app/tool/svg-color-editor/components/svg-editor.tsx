@@ -1416,24 +1416,30 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
     }
   };
 
-  // Handle mouse events for panning
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button === 0) { // Left click only
+  // Add touch event handlers for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) { // Single touch for panning
+      const touch = e.touches[0];
       setIsDragging(true);
       setMoveDistance({ x: 0, y: 0 });
-      // Store initial mouse position and current viewBox
+      // Store initial touch position and current viewBox
       setDragStart({ x: viewBox.x, y: viewBox.y });
-      setLastMousePosition({ x: e.clientX, y: e.clientY });
+      setLastMousePosition({ x: touch.clientX, y: touch.clientY });
+      
+      // Prevent default to avoid scrolling the page
+      e.preventDefault();
     }
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDragging && svgRef.current) {
-      // Calculate mouse movement in screen pixels
-      const dx = e.clientX - lastMousePosition.x;
-      const dy = e.clientY - lastMousePosition.y;
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (isDragging && svgRef.current && e.touches.length === 1) {
+      const touch = e.touches[0];
       
-      // Update total move distance for detecting panning vs. clicking
+      // Calculate touch movement in screen pixels
+      const dx = touch.clientX - lastMousePosition.x;
+      const dy = touch.clientY - lastMousePosition.y;
+      
+      // Update total move distance for detecting panning vs. tapping
       setMoveDistance(prev => ({
         x: prev.x + Math.abs(dx),
         y: prev.y + Math.abs(dy)
@@ -1454,9 +1460,9 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
       const scaleY = viewBox.height / svgHeight;
       
       // Calculate the new viewBox coordinates
-      // Move in the opposite direction of mouse movement
-      const newX = dragStart.x - (e.clientX - lastMousePosition.x) * scaleX;
-      const newY = dragStart.y - (e.clientY - lastMousePosition.y) * scaleY;
+      // Move in the opposite direction of touch movement
+      const newX = dragStart.x - (touch.clientX - lastMousePosition.x) * scaleX;
+      const newY = dragStart.y - (touch.clientY - lastMousePosition.y) * scaleY;
       
       // Update the SVG viewBox
       svgRef.current.setAttribute('viewBox', `${newX} ${newY} ${viewBox.width} ${viewBox.height}`);
@@ -1464,21 +1470,26 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
       
       // Update drag reference for next move
       setDragStart({ x: newX, y: newY });
-      setLastMousePosition({ x: e.clientX, y: e.clientY });
+      setLastMousePosition({ x: touch.clientX, y: touch.clientY });
+      
+      // Prevent default to avoid scrolling the page
+      e.preventDefault();
     }
   };
 
-  const handleMouseUp = (e: React.MouseEvent) => {
+  const handleTouchEnd = (e: React.TouchEvent) => {
     // Only allow element selection if we haven't been panning
-    if (!isPanning && e.button === 0) {
-      // Handle element selection
-      const target = e.target as SVGElement;
-      const element = svgElements.find(el => el.element === target);
+    if (!isPanning && e.changedTouches.length === 1) {
+      const touch = e.changedTouches[0];
+      
+      // Get the element at the touch position
+      const elementAtTouch = document.elementFromPoint(touch.clientX, touch.clientY) as SVGElement;
+      const element = svgElements.find(el => el.element === elementAtTouch);
       
       if (element) {
         handleElementSelect(element);
-      } else if (target === svgRef.current) {
-        // Clicked on the SVG background/empty area, clear highlights
+      } else if (elementAtTouch === svgRef.current) {
+        // Touched on the SVG background/empty area, clear highlights
         const allHighlighted = svgRef.current?.querySelectorAll('.selected-element');
         allHighlighted?.forEach(el => {
           el.classList.remove('selected-element');
@@ -1688,6 +1699,83 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
     };
   }, []);
 
+  // Handle mouse events for panning
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button === 0) { // Left click only
+      setIsDragging(true);
+      setMoveDistance({ x: 0, y: 0 });
+      // Store initial mouse position and current viewBox
+      setDragStart({ x: viewBox.x, y: viewBox.y });
+      setLastMousePosition({ x: e.clientX, y: e.clientY });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging && svgRef.current) {
+      // Calculate mouse movement in screen pixels
+      const dx = e.clientX - lastMousePosition.x;
+      const dy = e.clientY - lastMousePosition.y;
+      
+      // Update total move distance for detecting panning vs. clicking
+      setMoveDistance(prev => ({
+        x: prev.x + Math.abs(dx),
+        y: prev.y + Math.abs(dy)
+      }));
+
+      // If moved more than a few pixels, consider it panning
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        setIsPanning(true);
+      }
+      
+      // Convert screen pixels to SVG coordinate units
+      const svgRect = svgRef.current.getBoundingClientRect();
+      const svgWidth = svgRect.width;
+      const svgHeight = svgRect.height;
+      
+      // Calculate scaling factor between screen pixels and SVG units
+      const scaleX = viewBox.width / svgWidth;
+      const scaleY = viewBox.height / svgHeight;
+      
+      // Calculate the new viewBox coordinates
+      // Move in the opposite direction of mouse movement
+      const newX = dragStart.x - (e.clientX - lastMousePosition.x) * scaleX;
+      const newY = dragStart.y - (e.clientY - lastMousePosition.y) * scaleY;
+      
+      // Update the SVG viewBox
+      svgRef.current.setAttribute('viewBox', `${newX} ${newY} ${viewBox.width} ${viewBox.height}`);
+      setViewBox({ ...viewBox, x: newX, y: newY });
+      
+      // Update drag reference for next move
+      setDragStart({ x: newX, y: newY });
+      setLastMousePosition({ x: e.clientX, y: e.clientY });
+    }
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    // Only allow element selection if we haven't been panning
+    if (!isPanning && e.button === 0) {
+      // Handle element selection
+      const target = e.target as SVGElement;
+      const element = svgElements.find(el => el.element === target);
+      
+      if (element) {
+        handleElementSelect(element);
+      } else if (target === svgRef.current) {
+        // Clicked on the SVG background/empty area, clear highlights
+        const allHighlighted = svgRef.current?.querySelectorAll('.selected-element');
+        allHighlighted?.forEach(el => {
+          el.classList.remove('selected-element');
+        });
+        setSelectedElement(null);
+        setSelectedPaletteColor(null);
+      }
+    }
+    
+    setIsDragging(false);
+    setIsPanning(false);
+    setMoveDistance({ x: 0, y: 0 });
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* SVG Preview */}
@@ -1765,6 +1853,9 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
             onWheel={handleWheel}
           />
 
