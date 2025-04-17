@@ -25,8 +25,7 @@ export default function AppContent() {
 
       {svgContent && (
         <div className="space-y-6">
-          <SVGEditor svgContent={svgContent} />
-          <div className="flex justify-end">
+           <div className="flex justify-end">
             <button
               onClick={() => setSvgContent('')}
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
@@ -34,6 +33,7 @@ export default function AppContent() {
               ← Upload a different SVG
             </button>
           </div>
+          <SVGEditor svgContent={svgContent} />
         </div>
       )}
     </div>

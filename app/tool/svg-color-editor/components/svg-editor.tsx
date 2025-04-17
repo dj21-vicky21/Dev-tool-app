@@ -20,6 +20,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import { ColorPicker } from './color-picker';
+import { Download, RefreshCcw } from 'lucide-react';
 
 interface ColorableElement {
   element: SVGElement;
@@ -981,6 +982,11 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
         } else if (e.key === 'y') {
           e.preventDefault();
           handleRedo();
+        } else if (e.key === 'r') {
+          e.preventDefault();
+          if (isSvgModified) {
+            handleResetColors();
+          }
         }
       }
     };
@@ -990,7 +996,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [handleZoom, handleReset, handleUndo, handleRedo]);
+  }, [handleZoom, handleReset, handleUndo, handleRedo, handleResetColors, isSvgModified]);
 
   // Improve the global event listeners to ensure we catch all drag end events
   useEffect(() => {
@@ -1295,7 +1301,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
   };
 
   // Get SVG as string for download
-  const getSvgString = () => {
+  const getSvgString = useCallback(() => {
     if (!svgRef.current) return '';
 
     try {
@@ -1383,10 +1389,10 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
       });
       return '';
     }
-  };
+  }, [svgRef, svgContent, originalSvgData]);
 
   // Handle SVG download
-  const handleDownload = () => {
+  const handleDownload = useCallback(() => {
     const svgString = getSvgString();
     if (!svgString) return;
 
@@ -1414,7 +1420,41 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
         variant: "destructive"
       });
     }
-  };
+  }, [getSvgString]);
+
+  // Add download keyboard shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle shortcuts if not in an input field
+      if (e.target instanceof HTMLInputElement || 
+          e.target instanceof HTMLTextAreaElement ||
+          e.target instanceof HTMLSelectElement) {
+        return;
+      }
+
+      // Download shortcut (Ctrl+S or Command+S)
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        // Only allow download if SVG is modified
+        if (isSvgModified && svgContent) {
+          handleDownload();
+        } 
+        // else {
+        //   toast({
+        //     title: "Download blocked",
+        //     description: "No changes have been made to the SVG.",
+        //     variant: "default"
+        //   });
+        // }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleDownload, isSvgModified, svgContent]);
 
   // Add touch event handlers for mobile
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -1791,30 +1831,30 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
                   size="icon"
                   onClick={handleUndo}
                   disabled={currentHistoryIndex < 0}
-                  // title={`${modifierKey} Z`}
+                  title={`${modifierKey} Z`}
                   className="h-8 w-8 relative group"
                 >
                   <span>↩</span>
-                  <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <kbd className="bg-primary text-primary-foreground text-[8px] px-1 rounded flex items-center">
                       <span className="mr-0.5">{modifierKey}</span>Z
                     </kbd>
-                  </div>
+                  </div> */}
                 </Button>
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={handleRedo}
                   disabled={currentHistoryIndex >= colorHistory.length - 1}
-                  // title={`${modifierKey} Y`}
+                  title={`${modifierKey} Y`}
                   className="h-8 w-8 relative group"
                 >
                   <span>↪</span>
-                  <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <kbd className="bg-primary text-primary-foreground text-[8px] px-1 rounded flex items-center">
                       <span className="mr-0.5">{modifierKey}</span>Y
                     </kbd>
-                  </div>
+                  </div> */}
                 </Button>
               </div>
             </div>
@@ -1825,17 +1865,21 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
                 onClick={handleResetColors} 
                 variant="outline"
                 size="sm"
-                title="Reset all colors to original"
+                title={`Reset all colors to original (${modifierKey}+R)`}
                 disabled={!isSvgModified}
+                className="group relative"
               >
-                Reset Colors
+                <RefreshCcw className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">Reset</span>
               </Button>
               <Button 
                 onClick={handleDownload} 
                 variant="outline"
+                title={`Download SVG (${modifierKey}+S)`}
                 disabled={!svgRef.current || (!isSvgModified && !!svgContent)}
               >
-                Download
+                <Download className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">Download</span>
               </Button>
             </div>
           </div>
@@ -1924,9 +1968,10 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
                   <Button
                     variant="outline"
                     size="sm"
+                    disabled={!selectedElement}
                     onClick={clearSelection}
                   >
-                    Clear
+                    Clear selection
                   </Button>
                 {/* </div> */}
 
@@ -2116,6 +2161,8 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
               <li className='hidden lg:flex items-center gap-1'><kbd className=" px-1.5 py-0.5 bg-background rounded border">{modifierKey} 0</kbd> Reset view</li>
               <li className='hidden lg:flex items-center gap-1'><kbd className=" px-1.5 py-0.5 bg-background rounded border">{modifierKey} Z</kbd> Undo</li>
               <li className='hidden lg:flex items-center gap-1'><kbd className=" px-1.5 py-0.5 bg-background rounded border">{modifierKey} Y</kbd> Redo</li>
+              <li className='hidden lg:flex items-center gap-1'><kbd className=" px-1.5 py-0.5 bg-background rounded border">{modifierKey} S</kbd> Download SVG</li>
+              <li className='hidden lg:flex items-center gap-1'><kbd className=" px-1.5 py-0.5 bg-background rounded border">{modifierKey} R</kbd> Reset colors</li>
               <li className='hidden lg:flex items-center gap-1'><kbd className="px-1.5 py-0.5 bg-background rounded border">{modifierKey} + Mouse wheel</kbd> Zoom in/out</li>
               <li className="pt-1">
                 <span className="text-muted-foreground/80">Touch Gestures:</span>
