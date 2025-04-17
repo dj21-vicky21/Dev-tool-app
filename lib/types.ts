@@ -1,3 +1,5 @@
+import { LucideIcon } from "lucide-react";
+
 export type RGB = {
   r: number;
   g: number;
@@ -17,3 +19,11 @@ export type JsonValue =
   | null
   | JsonValue[]
   | { [key: string]: JsonValue };
+
+export interface Tool {
+  name: string;
+  description: string;
+  href: string;
+  icon: LucideIcon;
+  isNew: boolean;
+}
