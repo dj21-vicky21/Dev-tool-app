@@ -1,4 +1,4 @@
-import { Palette, KeyRound, Lock, FileCode, FileJson, FileSpreadsheet, QrCode, Text, Code2, Edit2, Paintbrush, Layers } from "lucide-react"
+import { Palette, KeyRound, Lock, FileCode, FileJson, FileSpreadsheet, QrCode, Text, Code2, Edit2, Paintbrush, Layers, Ruler } from "lucide-react"
 import { Tool } from "./types"
 
 export const tools: Tool[] = [
@@ -91,6 +91,13 @@ export const tools: Tool[] = [
     description: "Create beautiful glass effect UI in CSS and Tailwind",
     href: "/tool/glassmorphism",
     icon: Layers,
+    isNew: true
+  },
+  {
+    name: "CSS Unit Converter",
+    description: "Convert between different CSS units like px, em, rem, vh, vw, and more",
+    href: "/tool/css-unit-converter",
+    icon: Ruler,
     isNew: true
   }
 ]
