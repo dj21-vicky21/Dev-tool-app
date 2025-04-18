@@ -9,11 +9,12 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, MessageSquare } from "lucide-react";
+import { Menu, MessageSquare, Search } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { tools } from "@/lib/tools";
+import { Input } from "@/components/ui/input";
 
 export default function ToolsLayout({
   children,
@@ -21,6 +22,7 @@ export default function ToolsLayout({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const pathname = usePathname();
 
   const getCurrentToolName = (path: string) => {
@@ -32,6 +34,13 @@ export default function ToolsLayout({
     const matchingTool = tools.find((tool) => path.startsWith(tool.href));
     return matchingTool?.name;
   };
+
+  const filteredTools = [...tools]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .filter((tool) => 
+      tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tool.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   return (
     <div className="container mx-auto py-6">
@@ -48,39 +57,63 @@ export default function ToolsLayout({
               <SheetHeader>
                 <SheetTitle className="text-xl">Dev tools</SheetTitle>
               </SheetHeader>
-              <div className="py-6">
+              <div className="py-4">
+                <div className="relative mb-4">
+                  <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Search tools..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-8"
+                  />
+                  {searchQuery && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-1 top-1/2 h-6 w-6 -translate-y-1/2 p-0"
+                      onClick={() => setSearchQuery("")}
+                    >
+                      <span className="sr-only">Clear search</span>
+                      <span aria-hidden="true">×</span>
+                    </Button>
+                  )}
+                </div>
                 <ul className="space-y-2">
-                  {[...tools]
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((tool) => (
-                      <li key={tool.href}>
-                        <Link
-                          href={tool.href}
-                          className={cn(
-                            "block px-3 py-2 rounded-md text-sm font-medium transition-colors relative",
-                            pathname === tool.href
-                              ? "bg-primary text-primary-foreground"
-                              : "hover:bg-muted"
-                          )}
-                          onClick={() => setOpen(false)}
-                        >
-                          <div className="flex items-center justify-between">
-                            {tool.name}
-                            {tool.isNew && (
-                              <div className="inline-flex ml-2">
-                                <div className="flex items-center gap-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs font-medium px-2 py-0.5 rounded-md shadow-sm">
-                                  <span className="relative flex h-1.5 w-1.5">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
-                                  </span>
-                                  New
-                                </div>
+                  {filteredTools.map((tool) => (
+                    <li key={tool.href}>
+                      <Link
+                        href={tool.href}
+                        className={cn(
+                          "block px-3 py-2 rounded-md text-sm font-medium transition-colors relative",
+                          pathname === tool.href
+                            ? "bg-primary text-primary-foreground"
+                            : "hover:bg-muted"
+                        )}
+                        onClick={() => setOpen(false)}
+                      >
+                        <div className="flex items-center justify-between">
+                          {tool.name}
+                          {tool.isNew && (
+                            <div className="inline-flex ml-2">
+                              <div className="flex items-center gap-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs font-medium px-2 py-0.5 rounded-md shadow-sm">
+                                <span className="relative flex h-1.5 w-1.5">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
+                                </span>
+                                New
                               </div>
-                            )}
-                          </div>
-                        </Link>
-                      </li>
-                    ))}
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                  
+                  {filteredTools.length === 0 && (
+                    <li className="px-3 py-4 text-center text-sm text-muted-foreground">
+                      No tools found matching &ldquo;{searchQuery}&rdquo;
+                    </li>
+                  )}
                 </ul>
               </div>
             </SheetContent>
