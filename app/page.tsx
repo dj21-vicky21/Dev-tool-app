@@ -25,8 +25,8 @@ export default function Home() {
     );
   }).sort((a, b) => a.name.localeCompare(b.name));
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="relative overflow-hidden lg:p-8 my-6 mb-12 ">
+    <div className="container mx-auto px-4">
+      <div className="relative overflow-hidden lg:p-8 mb-3">
         
         <div className="relative z-10 text-center space-y-4">
           <div className="inline-block bg-gradient-to-r from-secondary to-secondary/30 p-2 px-4 rounded-full text-xs font-medium mb-2">
