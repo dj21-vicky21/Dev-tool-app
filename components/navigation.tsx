@@ -6,26 +6,26 @@ import { Button } from "@/components/ui/button";
 import {
   Moon,
   Sun,
-  PenToolIcon as ToolIcon,
+  // PenToolIcon as ToolIcon,
   FileCode2
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
-import {tools} from "../lib/tools"
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu";
+// import { cn } from "@/lib/utils";
+// import { usePathname } from "next/navigation";
+// import {tools} from "../lib/tools"
 
 export function Navigation() {
   const { theme, setTheme } = useTheme();
-  const pathname = usePathname();
+  // const pathname = usePathname();
 
   // Check if the current route is the homepage
-  const isHomePage = pathname === "/" ? true : false;
+  // const isHomePage = pathname === "/" ? true : false;
 
   return (
     <div className="border-b">
@@ -37,7 +37,7 @@ export function Navigation() {
           </Link>
         </div>
         <div className="ml-auto flex">
-          <div className={cn(isHomePage ? "hidden" : "")}>
+          {/* <div className={cn(isHomePage ? "hidden" : "")}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center space-x-2">
@@ -59,7 +59,7 @@ export function Navigation() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
+          </div> */}
           <div className="ml-4">
             <Button
               variant="ghost"
