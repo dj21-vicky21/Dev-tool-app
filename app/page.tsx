@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { tools } from "../lib/tools";
@@ -26,26 +26,36 @@ export default function Home() {
   });
   return (
     <div className="container mx-auto px-4 py-6">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold tracking-tight">
-          <AuroraText speed={4} colors={["#9333ea", "#ec4899", "#ffffff"]}>Devtools</AuroraText>
-        </h1>
-        <p className="text-lg text-muted-foreground mt-2">
-          A collection of modern, fast, and easy-to-use development tools
-        </p>
-      </div>
-
-      <div className="mb-6 flex items-center justify-center">
-        <div className="relative">
-          <Input
-            type="text"
-            placeholder="Search tools..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-lg pl-10" // Add padding to the left for the icon
-          />
-          {/* Search icon */}
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+      <div className="relative overflow-hidden lg:p-8 my-6 mb-12 ">
+        
+        <div className="relative z-10 text-center space-y-4">
+          <div className="inline-block bg-gradient-to-r from-secondary to-secondary/30 p-2 px-4 rounded-full text-xs font-medium mb-2">
+            <span className="flex items-center gap-1">
+              <Sparkles className="h-3 w-3 text-yellow-500" />
+              <span>Powerful development tools in one place</span>
+            </span>
+          </div>
+          
+          <h1 className="text-6xl font-bold tracking-tight">
+            <AuroraText colors={["#ec4899", "#9333ea"]}>Devtools</AuroraText>
+          </h1>
+          
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            A collection of modern, fast, and easy-to-use development tools to streamline your workflow
+          </p>
+          
+          <div className="mt-8 flex items-center justify-center">
+            <div className="relative max-w-md w-full">
+              <Input
+                type="text"
+                placeholder="Search tools..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 py-6 shadow-sm border-primary/20 focus-visible:ring-primary" 
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+            </div>
+          </div>
         </div>
       </div>
 
