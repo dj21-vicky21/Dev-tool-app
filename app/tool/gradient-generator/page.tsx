@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function GradientGeneratorPage() {
   return (
     <div className="container mx-auto">
-      <div>
+      <div className="mb-6">
         <p className="text-muted-foreground">Create beautiful CSS gradients with our interactive gradient generator tool</p>
       </div>
       
