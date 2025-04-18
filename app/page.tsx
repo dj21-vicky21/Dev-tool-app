@@ -8,11 +8,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Sparkles } from "lucide-react";
+import { MessageSquare, Search, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { tools } from "../lib/tools";
 import { AuroraText } from "@/components/magicui/aurora-text";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -88,6 +89,19 @@ export default function Home() {
             </Card>
           </Link>
         ))}
+      </div>
+      <div className="mt-8 border-t border-border">
+        <div className="container mx-auto py-8 flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Have feedback or suggestions? We&apos;d love to hear from you.
+          </p>
+          <Link href="/tool/feedback">
+            <Button variant="outline" size="sm" className="flex items-center gap-1">
+              <MessageSquare className="h-3.5 w-3.5" />
+              Send Feedback
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );
