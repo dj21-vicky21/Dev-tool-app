@@ -23,7 +23,7 @@ export default function Home() {
       tool.name.toLowerCase().includes(searchLower) ||
       tool.description.toLowerCase().includes(searchLower)
     );
-  });
+  }).sort((a, b) => a.name.localeCompare(b.name));
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="relative overflow-hidden lg:p-8 my-6 mb-12 ">
@@ -62,7 +62,7 @@ export default function Home() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredTools.map((tool) => (
           <Link key={tool.href} href={tool.href}>
-            <Card className="h-full hover:ring-1 hover:ring-primary/20 transition-all transform hover:scale-[1.01]">
+            <Card className="h-full tool-card-hover hover:ring-1 hover:ring-primary/20 transition-all transform hover:scale-[1.01]">
 
               {tool.isNew && <div className="absolute -top-1 -right-1">
                 <div className="flex items-center gap-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs font-medium px-3 py-1 rounded-md shadow-lg">

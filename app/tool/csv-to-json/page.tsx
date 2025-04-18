@@ -204,7 +204,6 @@ export default function CsvToJson() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">CSV to JSON</h1>
         <p className="text-muted-foreground">Convert CSV data to JSON format</p>
       </div>
 

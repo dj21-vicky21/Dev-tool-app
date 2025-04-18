@@ -79,7 +79,6 @@ export default function EncodeDecode() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Encode/Decode</h1>
         <p className="text-muted-foreground">
           Convert text between different formats
         </p>

@@ -124,12 +124,11 @@ export default function UuidGenerator() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight"> UUID Generator</h1>
         <p className="text-muted-foreground">
           Generate UUIDs in various formats for your applications
         </p>
       </div>
-      <Card className="max-w-3xl mx-auto">
+      <Card className="mx-auto">
        
 
         <Tabs

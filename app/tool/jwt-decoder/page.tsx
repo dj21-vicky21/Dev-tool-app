@@ -58,7 +58,6 @@ export default function JWTDecoder() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">JWT Decoder</h1>
         <p className="text-muted-foreground">
           Decode and inspect JSON Web Tokens
         </p>

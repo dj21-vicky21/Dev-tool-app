@@ -123,7 +123,6 @@ ${stats.frequentChars.map(fc => `${fc.char}: ${fc.percentage.toFixed(1)}%`).join
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Text Analyzer</h1>
         <p className="text-muted-foreground">
           Analyze text and get detailed statistics
         </p>

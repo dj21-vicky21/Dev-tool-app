@@ -67,10 +67,10 @@ function NotFound() {
             </Link>
           </Button>
           <Button asChild variant="outline">
-            <a href="#" onClick={(e) => { e.preventDefault(); window.history.back(); }}>
+            <Link href="javascript:history.back()">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Go Back
-            </a>
+            </Link>
           </Button>
         </motion.div>
       </motion.div>

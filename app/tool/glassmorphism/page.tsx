@@ -423,9 +423,6 @@ ${customUtilityCSS}` : ''}`;
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Glassmorphism Generator
-        </h1>
         <p className="text-muted-foreground">
           Create beautiful glassmorphism effects for your UI with real-time
           preview

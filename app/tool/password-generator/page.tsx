@@ -70,7 +70,6 @@ export default function PasswordGenerator() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Password Generator</h1>
         <p className="text-muted-foreground">
           Generate secure, random passwords
         </p>
