@@ -1,4 +1,4 @@
-import { Palette, KeyRound, Lock, FileCode, FileJson, FileSpreadsheet, QrCode, Text, Code2, Edit2, Paintbrush } from "lucide-react"
+import { Palette, KeyRound, Lock, FileCode, FileJson, FileSpreadsheet, QrCode, Text, Code2, Edit2, Paintbrush, Layers } from "lucide-react"
 import { Tool } from "./types"
 
 export const tools: Tool[] = [
@@ -84,6 +84,13 @@ export const tools: Tool[] = [
     description: "Generate CSS gradients with ease",
     href: "/tool/gradient-generator",
     icon: Paintbrush,
+    isNew: true
+  },
+  {
+    name: "Glassmorphism Generator",
+    description: "Create beautiful glass effect UI in CSS and Tailwind",
+    href: "/tool/glassmorphism",
+    icon: Layers,
     isNew: true
   }
 ]
