@@ -9,6 +9,8 @@ import { ColorStop } from "./types";
 import GradientPreview from "./GradientPreview";
 import GradientControls from "./GradientControls";
 import CodeOutput from "./CodeOutput";
+import PredefinedGradients from "./PredefinedGradients";
+import { Separator } from "@/components/ui/separator";
 
 export default function GradientGenerator() {
   const [colorStops, setColorStops] = useState<ColorStop[]>([
@@ -45,8 +47,21 @@ export default function GradientGenerator() {
     // Sort by position
     newStops.sort((a, b) => a.position - b.position);
     
+    // 50% chance of radial gradient
+    const randomType = Math.random() > 0.5 ? "linear" : "radial";
+    setGradientType(randomType as "linear" | "radial");
     setColorStops(newStops);
     setRotation(Math.floor(Math.random() * 360));
+  };
+
+  const handlePresetSelect = (
+    stops: ColorStop[], 
+    type: "linear" | "radial", 
+    rotation: number
+  ) => {
+    setColorStops(stops);
+    setGradientType(type);
+    setRotation(rotation);
   };
 
   return (
@@ -105,6 +120,13 @@ export default function GradientGenerator() {
             activeTab={activeTab}
           />
         </Tabs>
+      </div>
+      
+      <Separator />
+      
+      {/* Predefined Gradients Section */}
+      <div>
+        <PredefinedGradients onSelectGradient={handlePresetSelect} />
       </div>
     </div>
   );

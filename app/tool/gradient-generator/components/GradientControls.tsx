@@ -363,6 +363,7 @@ export default function GradientControls({
             <div className="relative flex-1">
               <Input
                 id="color"
+                onFocus={(e) => e.target.select()}
                 value={activeStop.color}
                 onChange={(e) => handleColorChange(e.target.value)}
                 className="font-mono text-sm pl-10"
