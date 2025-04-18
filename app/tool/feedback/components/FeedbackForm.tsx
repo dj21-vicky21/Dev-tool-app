@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import {
   Card,
@@ -22,13 +23,12 @@ import {
 } from "@/components/ui/select";
 import { CheckIcon, SendIcon } from "lucide-react";
 import { tools } from "@/lib/tools";
-import { useSearchParams } from "next/navigation";
+
 
 export default function FeedbackForm() {
-
   const searchParams = useSearchParams();
   const toolParam = searchParams.get('tool');
-
+  
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [feedbackType, setFeedbackType] = useState("feedback");
