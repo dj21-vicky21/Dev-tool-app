@@ -454,6 +454,7 @@ export default function UnitConverter() {
                 <div>
                   <Label htmlFor="fontSizePx" className="text-sm">Root Font Size (px)</Label>
                   <Input
+                    onFocus={(e) => e.target.select()}
                     id="fontSizePx"
                     type="number"
                     value={fontSizePx}
@@ -465,6 +466,7 @@ export default function UnitConverter() {
                 <div>
                   <Label htmlFor="containerSizePx" className="text-sm">Container Size (px)</Label>
                   <Input
+                    onFocus={(e) => e.target.select()}
                     id="containerSizePx"
                     type="number"
                     value={containerSizePx}
@@ -476,6 +478,7 @@ export default function UnitConverter() {
                 <div>
                   <Label htmlFor="viewportWidthPx" className="text-sm">Viewport Width (px)</Label>
                   <Input
+                    onFocus={(e) => e.target.select()}
                     id="viewportWidthPx"
                     type="number"
                     value={viewportWidthPx}
@@ -487,6 +490,7 @@ export default function UnitConverter() {
                 <div>
                   <Label htmlFor="viewportHeightPx" className="text-sm">Viewport Height (px)</Label>
                   <Input
+                    onFocus={(e) => e.target.select()}
                     id="viewportHeightPx"
                     type="number"
                     value={viewportHeightPx}
