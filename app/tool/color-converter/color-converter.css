@@ -1,10 +1,3 @@
-/* Color Converter Tool Styles */
-
-/* Wrapper class to scope all styles */
-.color-converter-tool {
-  /* Add any global tool styles here */
-}
-
 /* Hue slider */
 .color-converter-tool .h-slider-hue [data-orientation="horizontal"] {
   background: linear-gradient(
