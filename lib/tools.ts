@@ -10,9 +10,9 @@ export const tools: Tool[] = [
     isNew: false
   },
   {
-    name: "JWT Decoder",
-    description: "Decode and verify JSON Web Tokens",
-    href: "/tool/jwt-decoder",
+    name: "JWT Generator - Decoder",
+    description: "Generate and decode JSON Web Tokens",
+    href: "/tool/jwt-generator-decoder",
     icon: KeyRound,
     isNew: false
   },
