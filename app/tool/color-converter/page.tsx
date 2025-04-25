@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ColorPicker from "./components/ColorPicker";
 import ColorSchemes from "./components/ColorSchemes";
 import useColorConvertorStore from "@/store/colorConvertor";
-import { Palette, History, Pipette, PaintBucket } from "lucide-react";
+import { Palette, PaintBucket } from "lucide-react";
 
 export default function ColorConverter() {
   const { color } = useColorConvertorStore();
@@ -55,14 +55,14 @@ export default function ColorConverter() {
               <Palette className="h-4 w-4" />
               <span>Color Schemes</span>
             </TabsTrigger>
-            <TabsTrigger value="eyedropper" className="flex items-center gap-1.5">
+            {/* <TabsTrigger value="eyedropper" className="flex items-center gap-1.5">
               <Pipette className="h-4 w-4" />
               <span>Extract Colors</span>
             </TabsTrigger>
             <TabsTrigger value="history" className="flex items-center gap-1.5">
               <History className="h-4 w-4" />
               <span>History</span>
-            </TabsTrigger>
+            </TabsTrigger> */}
           </TabsList>
 
           <TabsContent value="picker" className="space-y-4 mt-6">
@@ -105,7 +105,7 @@ export default function ColorConverter() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="eyedropper" className="space-y-4 mt-6">
+          {/* <TabsContent value="eyedropper" className="space-y-4 mt-6">
             <Card>
               <CardHeader>
                 <CardTitle>Color Extractor</CardTitle>
@@ -139,7 +139,7 @@ export default function ColorConverter() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </TabsContent> */}
         </Tabs>
       </div>
     </div>

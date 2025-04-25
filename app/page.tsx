@@ -38,7 +38,7 @@ export default function Home() {
           </div>
           
           <h1 className="text-6xl font-bold tracking-tight">
-            <AuroraText colors={["#ec4899", "#9333ea"]}>Devtools</AuroraText>
+            <AuroraText colors={["#ec4899", "#9333ea"]}>DevGarage</AuroraText>
           </h1>
           
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
