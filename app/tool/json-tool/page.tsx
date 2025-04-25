@@ -1,13 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
-import { Copy, FileJson, Minimize2, Maximize2, AlertCircle, FileSearch, Download } from "lucide-react"
+import { Copy, FileJson, Minimize2, Maximize2, AlertCircle, FileSearch, Download, Upload } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { JsonValue } from "@/lib/types"
+
 interface JsonAnalysis {
   keyCount: number
   arrayCount: number
@@ -21,7 +22,6 @@ interface JsonAnalysis {
   isValid: boolean
   error?: string
 }
-
 
 function analyzeJson(json: string): JsonAnalysis {
   const analysis: JsonAnalysis = {
@@ -78,7 +78,12 @@ function formatBytes(bytes: number): string {
 }
 
 export default function JsonTools() {
-  const [input, setInput] = useState("")
+  const [input, setInput] = useState(`{
+  "sub": "1234567890",
+  "name": "John Doe",
+  "iat": 1745608925,
+  "exp": 1748198258
+}`)
   const [isCompact, setIsCompact] = useState(false)
   const [analysis, setAnalysis] = useState<JsonAnalysis>({
     keyCount: 0,
@@ -93,6 +98,7 @@ export default function JsonTools() {
     isValid: true
   })
   const { toast } = useToast()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
@@ -162,6 +168,68 @@ export default function JsonTools() {
     window.URL.revokeObjectURL(url)
   }
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Check if the file is a JSON file
+    if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a JSON file",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string
+        
+        // Try to parse the JSON to validate it
+        JSON.parse(content)
+        
+        // Set the content to the textarea
+        setInput(content)
+        
+        // Update analysis
+        setAnalysis(analyzeJson(content))
+        
+        toast({
+          title: "File uploaded successfully",
+          description: `${file.name} loaded`,
+        })
+      } catch (error) {
+        console.error("Error parsing JSON file:", error)
+        toast({
+          title: "Invalid JSON file",
+          description: "The file does not contain valid JSON",
+          variant: "destructive",
+        })
+      }
+    }
+    
+    reader.onerror = () => {
+      toast({
+        title: "Error",
+        description: "Failed to read the file",
+        variant: "destructive",
+      })
+    }
+    
+    reader.readAsText(file)
+    
+    // Reset the file input so the same file can be uploaded again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const triggerFileUpload = () => {
+    fileInputRef.current?.click()
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -172,13 +240,28 @@ export default function JsonTools() {
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
+          <div className="flex flex-wrap items-center justify-between">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileJson className="h-5 w-5" />
               JSON Input
             </CardTitle>
             <CardDescription>Enter or paste your JSON</CardDescription>
+            
           </CardHeader>
+          <div className="p-6">
+            {/* Upload button */}
+            <Button
+                variant="outline"
+                onClick={triggerFileUpload}
+              >
+                <Upload className="lg:mr-2 h-4 w-4" />
+               <span className="hidden lg:block">
+                  Upload JSON
+               </span>
+              </Button>
+          </div>
+          </div>
           <CardContent className="space-y-4">
             <Textarea
               placeholder='{"example": "Enter your JSON here"}'
@@ -187,6 +270,16 @@ export default function JsonTools() {
               className="min-h-[400px] font-mono text-sm"
             />
             <div className="flex flex-wrap gap-2">
+              {/* Hidden file input */}
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileUpload} 
+                accept=".json,application/json" 
+                className="hidden" 
+              />
+              
+              
               <Button
                 disabled={!input.trim()}
                 variant="outline"
