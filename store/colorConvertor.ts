@@ -85,7 +85,7 @@ const MAX_RECENT = 20;
 
 const useColorConvertorStore = create<ColorConvertorState>((set) => ({
   // Basic color state
-  color: "#ff0000",
+  color: "#f76464",
   setColor: (newColor) => set(() => ({ color: newColor })),
   
   // Color data in different formats

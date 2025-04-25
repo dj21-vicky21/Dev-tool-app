@@ -33,7 +33,7 @@ const BASE_CONTAINER_SIZE_PX = 1000; // Assumed container size for %
 export default function UnitConverter() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("length");
-  const [inputValue, setInputValue] = useState<number>(100);
+  const [inputValue, setInputValue] = useState<string>("100");
   const [inputUnit, setInputUnit] = useState<string>("px");
   const [targetUnit, setTargetUnit] = useState<string>("rem");
   const [fontSizePx, setFontSizePx] = useState<number>(BASE_FONT_SIZE_PX);
@@ -266,26 +266,37 @@ export default function UnitConverter() {
     }
   };
 
-  // Handle conversion based on active tab
-  const convertValue = (value: number, fromUnit: string, toUnit: string): number => {
-    if (fromUnit === toUnit) return value;
+  // Convert value based on active tab
+  const convertValue = (value: number | string, fromUnit: string, toUnit: string): number => {
+    // If the input is empty string, NaN, or undefined, return 0
+    if (value === "" || isNaN(Number(value))) {
+      return 0;
+    }
+    
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    
+    if (fromUnit === toUnit) return numValue;
 
     switch (activeTab) {
       case "length":
-        return convertLength(value, fromUnit, toUnit);
+        return convertLength(numValue, fromUnit, toUnit);
       case "angle":
-        return convertAngle(value, fromUnit, toUnit);
+        return convertAngle(numValue, fromUnit, toUnit);
       case "time":
-        return convertTime(value, fromUnit, toUnit);
+        return convertTime(numValue, fromUnit, toUnit);
       case "resolution":
-        return convertResolution(value, fromUnit, toUnit);
+        return convertResolution(numValue, fromUnit, toUnit);
       default:
-        return value;
+        return numValue;
     }
   };
 
   // Format output value with appropriate precision
   const formatValue = (value: number): string => {
+    if (inputValue === "" || isNaN(parseFloat(inputValue))) {
+      return "";
+    }
+    
     if (value === 0) return "0";
     
     // For very small values, use scientific notation
@@ -304,6 +315,9 @@ export default function UnitConverter() {
 
   // Get formatted output value with unit
   const getFormattedOutput = (value: number, unit: string): string => {
+    if (inputValue === "" || isNaN(parseFloat(inputValue))) {
+      return "";
+    }
     return `${formatValue(value)}${unit}`;
   };
 
@@ -334,9 +348,9 @@ export default function UnitConverter() {
                   <Input
                     id="inputValue"
                     onFocus={(e) => e.target.select()}
-                    type="number"
+                    type="text"
                     value={inputValue}
-                    onChange={(e) => setInputValue(parseFloat(e.target.value) || 0)}
+                    onChange={(e) => setInputValue(e.target.value)}
                     className="rounded-r-none w-24 h-full"
                   />
                   <TooltipProvider>
@@ -391,7 +405,7 @@ export default function UnitConverter() {
                   <Input
                     id="targetValue"
                     type="text"
-                    value={formatValue(convertValue(inputValue, inputUnit, targetUnit))}
+                    value={formatValue(convertValue(parseFloat(inputValue), inputUnit, targetUnit))}
                     readOnly
                     className="rounded-r-none w-24 bg-muted h-full"
                   />
@@ -424,10 +438,10 @@ export default function UnitConverter() {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => copyToClipboard(getFormattedOutput(convertValue(inputValue, inputUnit, targetUnit), targetUnit))}
+                onClick={() => copyToClipboard(getFormattedOutput(convertValue(parseFloat(inputValue), inputUnit, targetUnit), targetUnit))}
                 className="mt-6 md:mt-0 h-10 w-10"
               >
-                {copied === getFormattedOutput(convertValue(inputValue, inputUnit, targetUnit), targetUnit) ? (
+                {copied === getFormattedOutput(convertValue(parseFloat(inputValue), inputUnit, targetUnit), targetUnit) ? (
                   <Check className="h-4 w-4 text-green-500" />
                 ) : (
                   <Copy className="h-4 w-4" />
@@ -456,9 +470,17 @@ export default function UnitConverter() {
                   <Input
                     onFocus={(e) => e.target.select()}
                     id="fontSizePx"
-                    type="number"
+                    type="text"
                     value={fontSizePx}
-                    onChange={(e) => setFontSizePx(parseFloat(e.target.value) || BASE_FONT_SIZE_PX)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "") {
+                        setFontSizePx(BASE_FONT_SIZE_PX);
+                      } else {
+                        const parsed = parseFloat(value);
+                        setFontSizePx(isNaN(parsed) ? BASE_FONT_SIZE_PX : parsed);
+                      }
+                    }}
                     className="mt-1 h-8 text-sm"
                   />
                   <p className="text-xs text-muted-foreground mt-1">Used for em/rem calculations</p>
@@ -468,9 +490,17 @@ export default function UnitConverter() {
                   <Input
                     onFocus={(e) => e.target.select()}
                     id="containerSizePx"
-                    type="number"
+                    type="text"
                     value={containerSizePx}
-                    onChange={(e) => setContainerSizePx(parseFloat(e.target.value) || BASE_CONTAINER_SIZE_PX)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "") {
+                        setContainerSizePx(BASE_CONTAINER_SIZE_PX);
+                      } else {
+                        const parsed = parseFloat(value);
+                        setContainerSizePx(isNaN(parsed) ? BASE_CONTAINER_SIZE_PX : parsed);
+                      }
+                    }}
                     className="mt-1 h-8 text-sm"
                   />
                   <p className="text-xs text-muted-foreground mt-1">Parent element size for % calculations</p>
@@ -480,9 +510,17 @@ export default function UnitConverter() {
                   <Input
                     onFocus={(e) => e.target.select()}
                     id="viewportWidthPx"
-                    type="number"
+                    type="text"
                     value={viewportWidthPx}
-                    onChange={(e) => setViewportWidthPx(parseFloat(e.target.value) || BASE_VIEWPORT_WIDTH_PX)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "") {
+                        setViewportWidthPx(BASE_VIEWPORT_WIDTH_PX);
+                      } else {
+                        const parsed = parseFloat(value);
+                        setViewportWidthPx(isNaN(parsed) ? BASE_VIEWPORT_WIDTH_PX : parsed);
+                      }
+                    }}
                     className="mt-1 h-8 text-sm"
                   />
                   <p className="text-xs text-muted-foreground mt-1">Used for vw calculations</p>
@@ -492,9 +530,17 @@ export default function UnitConverter() {
                   <Input
                     onFocus={(e) => e.target.select()}
                     id="viewportHeightPx"
-                    type="number"
+                    type="text"
                     value={viewportHeightPx}
-                    onChange={(e) => setViewportHeightPx(parseFloat(e.target.value) || BASE_VIEWPORT_HEIGHT_PX)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "") {
+                        setViewportHeightPx(BASE_VIEWPORT_HEIGHT_PX);
+                      } else {
+                        const parsed = parseFloat(value);
+                        setViewportHeightPx(isNaN(parsed) ? BASE_VIEWPORT_HEIGHT_PX : parsed);
+                      }
+                    }}
                     className="mt-1 h-8 text-sm"
                   />
                   <p className="text-xs text-muted-foreground mt-1">Used for vh calculations</p>
@@ -519,7 +565,7 @@ export default function UnitConverter() {
                       {getCurrentUnits().map((unit) => {
                         if (unit === inputUnit || unit === targetUnit) return null;
                         
-                        const convertedValue = convertValue(inputValue, inputUnit, unit);
+                        const convertedValue = convertValue(parseFloat(inputValue), inputUnit, unit);
                         const formattedOutput = getFormattedOutput(convertedValue, unit);
                         
                         return (
