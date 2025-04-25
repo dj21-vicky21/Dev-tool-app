@@ -33,7 +33,7 @@ export function Navigation() {
         <div className="flex items-center space-x-4">
           <Link href="/" className="flex items-center space-x-2">
             <FileCode2 className="h-6 w-6" />
-            <span className="font-bold">Devtools</span>
+            <span className="font-bold">DevGarage</span>
           </Link>
         </div>
         <div className="ml-auto flex">
