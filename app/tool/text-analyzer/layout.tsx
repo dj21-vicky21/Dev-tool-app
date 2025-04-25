@@ -2,7 +2,7 @@ import React from 'react'
 import { Metadata } from 'next' 
 
 export const metadata: Metadata = {
-  title: "Text Analyzer | Dev Tools",
+  title: "Text Analyzer | DevGarage",
   description: "Analyze text and get detailed statistics",
 };
 

@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react'
 import './color-converter.css'
 
 export const metadata: Metadata = {
-  title: "Color Converter | Dev Tools",
+  title: "Color Converter | DevGarage",
   description: "Convert colors between different formats (HEX, RGB, HSL)",
 };
 

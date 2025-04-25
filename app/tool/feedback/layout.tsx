@@ -1,5 +1,11 @@
 import React, { Suspense } from "react";
 import { Loader2 } from "lucide-react";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Feedback | DevGarage",
+  description: "Share your feedback or suggest enhancements for our development tools.",
+};
 
 export default function FeedbackLayout({
   children,
