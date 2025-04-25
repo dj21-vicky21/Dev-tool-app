@@ -1,0 +1,134 @@
+/* Color Converter Tool Styles */
+
+/* Hue slider */
+.h-slider-hue [data-orientation="horizontal"] {
+  background: linear-gradient(
+    to right,
+    #ff0000, /* 0 degrees - red */
+    #ffff00, /* 60 degrees - yellow */
+    #00ff00, /* 120 degrees - green */
+    #00ffff, /* 180 degrees - cyan */
+    #0000ff, /* 240 degrees - blue */
+    #ff00ff, /* 300 degrees - magenta */
+    #ff0000  /* 360 degrees - red */
+  ) !important;
+}
+
+/* For slider thumb color */
+.h-slider-hue [data-orientation="horizontal"] .data-\[orientation\=horizontal\]\:h-1\.5 {
+  height: 1.5rem !important;
+}
+
+/* Color swatches */
+.color-swatch {
+  position: relative;
+  height: 2.5rem;
+  border-radius: 0.375rem;
+  transition: transform 0.2s ease;
+}
+
+.color-swatch:hover {
+  transform: scale(1.05);
+}
+
+.color-swatch-copy {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border-radius: 0.375rem;
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(2px);
+}
+
+.color-swatch:hover .color-swatch-copy {
+  opacity: 1;
+}
+
+/* Tints and shades grid */
+.color-variations {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+}
+
+/* Color format display */
+.color-formats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.color-format {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.color-format-value {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  background-color: hsl(var(--muted));
+  font-family: monospace;
+  font-size: 0.875rem;
+  position: relative;
+}
+
+.color-format-value:hover {
+  background-color: hsl(var(--muted) / 0.8);
+}
+
+.color-format-value button {
+  position: absolute;
+  right: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.color-format-value:hover button {
+  opacity: 1;
+}
+
+/* Animation for copied state */
+@keyframes copied {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.copied {
+  animation: copied 0.3s ease;
+}
+
+/* Color picker canvas styling */
+.react-colorful {
+  width: 100% !important;
+  height: 280px !important;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.react-colorful__saturation {
+  border-radius: 0.375rem 0.375rem 0 0;
+}
+
+.react-colorful__hue {
+  height: 24px !important;
+  margin-top: 0.5rem;
+  border-radius: 0.375rem;
+}
+
+.react-colorful__pointer {
+  width: 20px !important;
+  height: 20px !important;
+  border-width: 2px !important;
+}
+
+.react-colorful .react-colorful__interactive:focus .react-colorful__pointer {
+  transform: translate(-50%, -50%) scale(1.1);
+} 

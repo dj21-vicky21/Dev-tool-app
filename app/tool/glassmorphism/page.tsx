@@ -682,8 +682,8 @@ ${customUtilityCSS}` : ''}`;
                           2
                         )} shadow-lg${needsCustomUtility ? ' glass-effect' : ''}`;
 
-                        return (
-                          <div>
+  return (
+    <div>
                             <p className="text-xs sm:text-sm text-muted-foreground mb-2">
                               HEX format:
                             </p>
