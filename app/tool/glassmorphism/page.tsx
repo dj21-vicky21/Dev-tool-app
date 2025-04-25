@@ -558,7 +558,7 @@ ${customUtilityCSS}` : ''}`;
                   <CardTitle>Tailwind CSS Code</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Tabs defaultValue="full" className="mb-4">
+                  <Tabs defaultValue="rgb" className="mb-4">
                     <TabsList className="mb-4 flex flex-wrap">
                       <TabsTrigger value="full">Full Example</TabsTrigger>
                       <TabsTrigger value="rgb">RGB Classes</TabsTrigger>
