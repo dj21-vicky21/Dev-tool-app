@@ -2,8 +2,8 @@
 
 import { Label } from "@/components/ui/label";
 import { ColorStop } from "./types";
-import { Button } from "@/components/ui/button";
-import { Wand2 } from "lucide-react";
+// import { Button } from "@/components/ui/button";
+// import { Wand2 } from "lucide-react";
 
 // Predefined gradient presets
 export const gradientPresets = [
@@ -513,43 +513,43 @@ interface PredefinedGradientsProps {
 }
 
 export default function PredefinedGradients({ onSelectGradient }: PredefinedGradientsProps) {
-  const generateRandomGradient = () => {
-    const randomColor = () => {
-      const letters = "0123456789ABCDEF";
-      let color = "#";
-      for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-      }
-      return color;
-    };
+  // const generateRandomGradient = () => {
+  //   const randomColor = () => {
+  //     const letters = "0123456789ABCDEF";
+  //     let color = "#";
+  //     for (let i = 0; i < 6; i++) {
+  //       color += letters[Math.floor(Math.random() * 16)];
+  //     }
+  //     return color;
+  //   };
     
-    const numStops = 2 + Math.floor(Math.random() * 3); // 2-4 stops
+  //   const numStops = 2 + Math.floor(Math.random() * 3); // 2-4 stops
     
-    const newStops: ColorStop[] = [];
+  //   const newStops: ColorStop[] = [];
     
-    for (let i = 0; i < numStops; i++) {
-      newStops.push({
-        color: randomColor(),
-        position: i === 0 ? 0 : i === numStops - 1 ? 100 : Math.floor(Math.random() * 80) + 10,
-      });
-    }
+  //   for (let i = 0; i < numStops; i++) {
+  //     newStops.push({
+  //       color: randomColor(),
+  //       position: i === 0 ? 0 : i === numStops - 1 ? 100 : Math.floor(Math.random() * 80) + 10,
+  //     });
+  //   }
     
-    // Sort by position
-    newStops.sort((a, b) => a.position - b.position);
+  //   // Sort by position
+  //   newStops.sort((a, b) => a.position - b.position);
     
-    // 50% chance of radial gradient
-    const type = Math.random() > 0.5 ? "linear" as const : "radial" as const;
-    // Random rotation between 0-360 for linear gradients
-    const rotation = Math.floor(Math.random() * 360);
+  //   // 50% chance of radial gradient
+  //   const type = Math.random() > 0.5 ? "linear" as const : "radial" as const;
+  //   // Random rotation between 0-360 for linear gradients
+  //   const rotation = Math.floor(Math.random() * 360);
     
-    onSelectGradient(newStops, type, rotation);
-  };
+  //   onSelectGradient(newStops, type, rotation);
+  // };
 
   return (
     <div className="space-y-3">
       <div className="flex justify-between items-center">
         <Label className="text-lg font-semibold">Predefined Gradients</Label>
-        <Button 
+        {/* <Button 
           variant="outline" 
           size="sm" 
           onClick={generateRandomGradient}
@@ -557,7 +557,7 @@ export default function PredefinedGradients({ onSelectGradient }: PredefinedGrad
         >
           <Wand2 className="h-3.5 w-3.5" />
           Random
-        </Button>
+        </Button> */}
       </div>
       
         <div className="flex gap-3 flex-wrap p-2">

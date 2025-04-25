@@ -27,14 +27,53 @@ export default function GradientPreview({
     setIsFullscreen(!isFullscreen);
   };
   
+  // Direct mapping for SVG/Canvas coordinates
+  const getGradientCoordinates = (angle: number, width = 800, height = 600) => {
+    // Normalize angle to 0-360
+    const deg = ((angle % 360) + 360) % 360;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    switch (deg) {
+      case 0: return { x1: centerX, y1: height, x2: centerX, y2: 0 };
+      case 90: return { x1: 0, y1: centerY, x2: width, y2: centerY };
+      case 180: return { x1: centerX, y1: 0, x2: centerX, y2: height };
+      case 270: return { x1: width, y1: centerY, x2: 0, y2: centerY };
+      case 45: return { x1: 0, y1: height, x2: width, y2: 0 };
+      case 135: return { x1: 0, y1: 0, x2: width, y2: height };
+      case 225: return { x1: width, y1: 0, x2: 0, y2: height };
+      case 315: return { x1: width, y1: height, x2: 0, y2: 0 };
+      default:
+        const radians = (deg - 90) * (Math.PI / 180);
+        const distance = Math.sqrt(width * width + height * height);
+        const dx = Math.cos(radians) * distance;
+        const dy = Math.sin(radians) * distance;
+        return {
+          x1: centerX - dx / 2,
+          y1: centerY - dy / 2,
+          x2: centerX + dx / 2,
+          y2: centerY + dy / 2
+        };
+    }
+  };
+  
   const exportAsSVG = () => {
     if (!previewRef.current) return;
+    
+    // Get actual preview size
+    const rect = previewRef.current.getBoundingClientRect();
+    const width = Math.round(rect.width);
+    const height = Math.round(rect.height);
+    
+    // Ensure the color stops are sorted by position (same as CSS)
+    const sortedStops = [...colorStops].sort((a, b) => a.position - b.position);
     
     // Create SVG with the gradient
     const svgNS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNS, "svg");
-    svg.setAttribute("width", "800");
-    svg.setAttribute("height", "600");
+    svg.setAttribute("width", String(width));
+    svg.setAttribute("height", String(height));
+    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    // svg.setAttribute("preserveAspectRatio", "none");
     
     // Create defs for gradient
     const defs = document.createElementNS(svgNS, "defs");
@@ -48,28 +87,23 @@ export default function GradientPreview({
     gradientElement.setAttribute("id", gradientId);
     
     if (gradientType === "linear") {
-      // Convert rotation angle to x1,y1,x2,y2 coordinates
-      const angle = rotation % 360;
-      const angleInRadians = (angle - 90) * (Math.PI / 180);
-      const x1 = 50 + 50 * Math.cos(angleInRadians);
-      const y1 = 50 + 50 * Math.sin(angleInRadians);
-      const x2 = 50 + 50 * Math.cos(angleInRadians + Math.PI);
-      const y2 = 50 + 50 * Math.sin(angleInRadians + Math.PI);
-      
-      gradientElement.setAttribute("x1", `${x1}%`);
-      gradientElement.setAttribute("y1", `${y1}%`);
-      gradientElement.setAttribute("x2", `${x2}%`);
-      gradientElement.setAttribute("y2", `${y2}%`);
+      // Get coordinates based on the CSS angle, using actual preview dimensions
+      const coords = getGradientCoordinates(rotation, width, height);
+      gradientElement.setAttribute("gradientUnits", "userSpaceOnUse");
+      gradientElement.setAttribute("x1", `${coords.x1}`);
+      gradientElement.setAttribute("y1", `${coords.y1}`);
+      gradientElement.setAttribute("x2", `${coords.x2}`);
+      gradientElement.setAttribute("y2", `${coords.y2}`);
     } else {
       gradientElement.setAttribute("cx", "50%");
       gradientElement.setAttribute("cy", "50%");
       gradientElement.setAttribute("r", "50%");
     }
     
-    // Add stops
-    colorStops.forEach(stop => {
+    // Add stops in the same order as CSS
+    sortedStops.forEach(stop => {
       const stopElement = document.createElementNS(svgNS, "stop");
-      stopElement.setAttribute("offset", `${stop.position}%`);
+      stopElement.setAttribute("offset", `${stop.position / 100}`); // SVG uses 0-1 range
       stopElement.setAttribute("stop-color", stop.color);
       gradientElement.appendChild(stopElement);
     });
@@ -78,11 +112,11 @@ export default function GradientPreview({
     svg.appendChild(defs);
     
     // Create rectangle with the gradient
-    const rect = document.createElementNS(svgNS, "rect");
-    rect.setAttribute("width", "100%");
-    rect.setAttribute("height", "100%");
-    rect.setAttribute("fill", `url(#${gradientId})`);
-    svg.appendChild(rect);
+    const svgRect = document.createElementNS(svgNS, "rect");
+    svgRect.setAttribute("width", String(width));
+    svgRect.setAttribute("height", String(height));
+    svgRect.setAttribute("fill", `url(#${gradientId})`);
+    svg.appendChild(svgRect);
     
     // Convert to SVG string
     const svgData = new XMLSerializer().serializeToString(svg);
@@ -104,26 +138,32 @@ export default function GradientPreview({
   const exportAsPNG = () => {
     if (!previewRef.current) return;
     
+    // Get actual preview size
+    const rect = previewRef.current.getBoundingClientRect();
+    const width = Math.round(rect.width);
+    const height = Math.round(rect.height);
+    
+    // Ensure the color stops are sorted by position (same as CSS)
+    const sortedStops = [...colorStops].sort((a, b) => a.position - b.position);
+    
     // Create a canvas with the gradient
     const canvas = document.createElement("canvas");
-    canvas.width = 800;
-    canvas.height = 600;
+    canvas.width = width;
+    canvas.height = height;
     const ctx = canvas.getContext("2d");
     
     if (!ctx) return;
     
     if (gradientType === "linear") {
-      // Create linear gradient
-      const angleInRadians = (rotation - 90) * (Math.PI / 180);
-      const x1 = 400 + 400 * Math.cos(angleInRadians);
-      const y1 = 300 + 300 * Math.sin(angleInRadians);
-      const x2 = 400 + 400 * Math.cos(angleInRadians + Math.PI);
-      const y2 = 300 + 300 * Math.sin(angleInRadians + Math.PI);
+      // Get coordinates based on the CSS angle, using actual preview dimensions
+      const coords = getGradientCoordinates(rotation, width, height);
       
-      const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+      const gradient = ctx.createLinearGradient(
+        coords.x1, coords.y1, coords.x2, coords.y2
+      );
       
-      // Add color stops
-      colorStops.forEach(stop => {
+      // Add color stops in the same order as CSS
+      sortedStops.forEach(stop => {
         gradient.addColorStop(stop.position / 100, stop.color);
       });
       
@@ -140,8 +180,8 @@ export default function GradientPreview({
         Math.min(canvas.width, canvas.height) / 2
       );
       
-      // Add color stops
-      colorStops.forEach(stop => {
+      // Add color stops in the same order as CSS
+      sortedStops.forEach(stop => {
         gradient.addColorStop(stop.position / 100, stop.color);
       });
       
