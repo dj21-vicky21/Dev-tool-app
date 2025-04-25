@@ -1,7 +1,12 @@
 /* Color Converter Tool Styles */
 
+/* Wrapper class to scope all styles */
+.color-converter-tool {
+  /* Add any global tool styles here */
+}
+
 /* Hue slider */
-.h-slider-hue [data-orientation="horizontal"] {
+.color-converter-tool .h-slider-hue [data-orientation="horizontal"] {
   background: linear-gradient(
     to right,
     #ff0000, /* 0 degrees - red */
@@ -15,23 +20,29 @@
 }
 
 /* For slider thumb color */
-.h-slider-hue [data-orientation="horizontal"] .data-\[orientation\=horizontal\]\:h-1\.5 {
+.color-converter-tool .h-slider-hue [data-orientation="horizontal"] .data-\[orientation\=horizontal\]\:h-1\.5 {
   height: 1.5rem !important;
 }
 
+/* Copy icon container for smooth transitions */
+.color-converter-tool .copy-icon-transition {
+  position: relative;
+  overflow: visible;
+}
+
 /* Color swatches */
-.color-swatch {
+.color-converter-tool .color-swatch {
   position: relative;
   height: 2.5rem;
   border-radius: 0.375rem;
   transition: transform 0.2s ease;
 }
 
-.color-swatch:hover {
+.color-converter-tool .color-swatch:hover {
   transform: scale(1.05);
 }
 
-.color-swatch-copy {
+.color-converter-tool .color-swatch-copy {
   position: absolute;
   inset: 0;
   display: flex;
@@ -44,31 +55,31 @@
   backdrop-filter: blur(2px);
 }
 
-.color-swatch:hover .color-swatch-copy {
+.color-converter-tool .color-swatch:hover .color-swatch-copy {
   opacity: 1;
 }
 
 /* Tints and shades grid */
-.color-variations {
+.color-converter-tool .color-variations {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 0.5rem;
 }
 
 /* Color format display */
-.color-formats {
+.color-converter-tool .color-formats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
 }
 
-.color-format {
+.color-converter-tool .color-format {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
 
-.color-format-value {
+.color-converter-tool .color-format-value {
   display: flex;
   align-items: center;
   padding: 0.5rem;
@@ -79,18 +90,18 @@
   position: relative;
 }
 
-.color-format-value:hover {
+.color-converter-tool .color-format-value:hover {
   background-color: hsl(var(--muted) / 0.8);
 }
 
-.color-format-value button {
+.color-converter-tool .color-format-value button {
   position: absolute;
   right: 0.5rem;
   opacity: 0;
   transition: opacity 0.2s ease;
 }
 
-.color-format-value:hover button {
+.color-converter-tool .color-format-value:hover button {
   opacity: 1;
 }
 
@@ -101,34 +112,34 @@
   100% { transform: scale(1); }
 }
 
-.copied {
+.color-converter-tool .copied {
   animation: copied 0.3s ease;
 }
 
-/* Color picker canvas styling */
-.react-colorful {
+/* Color picker canvas styling - scope to color converter */
+.color-converter-tool .react-colorful {
   width: 100% !important;
   height: 280px !important;
   border-radius: 0.5rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-.react-colorful__saturation {
+.color-converter-tool .react-colorful__saturation {
   border-radius: 0.375rem 0.375rem 0 0;
 }
 
-.react-colorful__hue {
+.color-converter-tool .react-colorful__hue {
   height: 24px !important;
   margin-top: 0.5rem;
   border-radius: 0.375rem;
 }
 
-.react-colorful__pointer {
+.color-converter-tool .react-colorful__pointer {
   width: 20px !important;
   height: 20px !important;
   border-width: 2px !important;
 }
 
-.react-colorful .react-colorful__interactive:focus .react-colorful__pointer {
+.color-converter-tool .react-colorful .react-colorful__interactive:focus .react-colorful__pointer {
   transform: translate(-50%, -50%) scale(1.1);
 } 

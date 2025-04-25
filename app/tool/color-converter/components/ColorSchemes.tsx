@@ -32,15 +32,37 @@ export default function ColorSchemes({ currentColor }: ColorSchemeProps) {
 
   // Copy color to clipboard
   const copyToClipboard = async (color: string) => {
-    await navigator.clipboard.writeText(color);
-    setCopied(color);
-    
-    toast({
-      title: "Copied!",
-      description: `${color} copied to clipboard`,
-    });
+    try {
+      await navigator.clipboard.writeText(color);
+      setCopied(color);
+      
+      toast({
+        title: "Color copied",
+        description: (
+          <div className="flex items-center gap-2">
+            <div 
+              className="h-4 w-4 rounded border border-border" 
+              style={{ backgroundColor: color.startsWith('#') ? color : currentColor }}
+            />
+            <span>Copied {color}</span>
+          </div>
+        ),
+      });
 
-    setTimeout(() => setCopied(null), 2000);
+      // Clear the copied state after 2 seconds
+      setTimeout(() => {
+        if (copied === color) {
+          setCopied(null);
+        }
+      }, 2000);
+    } catch (error) {
+      console.error("Error copying to clipboard:", error);
+      toast({
+        title: "Copy failed",
+        description: "Could not copy to clipboard",
+        variant: "destructive"
+      });
+    }
   };
 
   // Get readable text color for a background
@@ -82,13 +104,12 @@ export default function ColorSchemes({ currentColor }: ColorSchemeProps) {
             size="icon"
             onClick={() => copyToClipboard(color)}
             style={{ color: getTextColor(color) }}
-            className="h-8 w-8 backdrop-blur-sm bg-white/10"
+            className="h-8 w-8 backdrop-blur-sm bg-white/10 hover:bg-white/20 copy-icon-transition"
           >
-            {copied === color ? (
-              <Check className="h-4 w-4" />
-            ) : (
-              <Copy className="h-4 w-4" />
-            )}
+            <span className="w-4 h-4 relative">
+              <Copy className={`h-4 w-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${copied === color ? 'opacity-0 scale-75' : 'opacity-100 scale-100'} transition-all duration-200`} />
+              <Check className={`h-4 w-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${copied === color ? 'opacity-100 scale-100' : 'opacity-0 scale-75'} transition-all duration-200`} />
+            </span>
           </Button>
         </div>
       </div>
@@ -202,12 +223,12 @@ export default function ColorSchemes({ currentColor }: ColorSchemeProps) {
                         variant="ghost" 
                         size="icon"
                         onClick={() => copyToClipboard(closestColor.name)}
+                        className="hover:bg-muted/50 rounded-full copy-icon-transition"
                       >
-                        {copied === closestColor.name ? (
-                          <Check className="h-4 w-4" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
+                        <span className="w-4 h-4 relative">
+                          <Copy className={`h-4 w-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${copied === closestColor.name ? 'opacity-0 scale-75' : 'opacity-100 scale-100'} transition-all duration-200`} />
+                          <Check className={`h-4 w-4 text-green-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${copied === closestColor.name ? 'opacity-100 scale-100' : 'opacity-0 scale-75'} transition-all duration-200`} />
+                        </span>
                       </Button>
                     </div>
                   )
@@ -332,13 +353,12 @@ export default function ColorSchemes({ currentColor }: ColorSchemeProps) {
                       variant="ghost" 
                       size="icon"
                       onClick={() => copyToClipboard(colorUtil.getReadableTextColor(currentColor))}
-                      className="h-6 w-6"
+                      className="h-6 w-6 hover:bg-muted/50 rounded-full copy-icon-transition"
                     >
-                      {copied === colorUtil.getReadableTextColor(currentColor) ? (
-                        <Check className="h-3 w-3" />
-                      ) : (
-                        <Copy className="h-3 w-3" />
-                      )}
+                      <span className="w-3 h-3 relative">
+                        <Copy className={`h-3 w-3 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${copied === colorUtil.getReadableTextColor(currentColor) ? 'opacity-0 scale-75' : 'opacity-100 scale-100'} transition-all duration-200`} />
+                        <Check className={`h-3 w-3 text-green-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${copied === colorUtil.getReadableTextColor(currentColor) ? 'opacity-100 scale-100' : 'opacity-0 scale-75'} transition-all duration-200`} />
+                      </span>
                     </Button>
                   </div>
                 </div>

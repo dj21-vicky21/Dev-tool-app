@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 
+  NOTE: Tool-specific CSS should be imported directly in the tool's layout component
+  and scoped with a tool-specific class to prevent interference between tools.
+  For example, color-converter CSS is imported in its layout.tsx and scoped with 
+  the .color-converter-tool class.
+*/
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;

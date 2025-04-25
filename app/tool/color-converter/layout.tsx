@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 function ColorConverterLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div>
+    <div className="color-converter-tool">
       <Suspense fallback={
         <div className="flex items-center justify-center h-screen">
           <Loader2 className="h-6 w-6 animate-spin mr-2" />
