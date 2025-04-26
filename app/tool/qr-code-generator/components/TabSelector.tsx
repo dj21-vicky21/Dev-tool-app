@@ -27,7 +27,7 @@ export function TabSelector({ activeTab, onChange }: TabSelectorProps) {
       onValueChange={(value) => onChange(value as QRCodeType)}
       className="w-full"
     >
-      <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full">
+      <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full h-fit">
         {Object.entries(QR_TYPE_CONFIGS).map(([type, config]) => (
           <TabsTrigger 
             key={type} 
