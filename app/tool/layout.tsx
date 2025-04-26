@@ -78,43 +78,45 @@ export default function ToolsLayout({
                     </Button>
                   )}
                 </div>
-                <ul className="space-y-2">
-                  {filteredTools.map((tool) => (
-                    <li key={tool.href}>
-                      <Link
-                        href={tool.href}
-                        className={cn(
-                          "block px-3 py-2 rounded-md text-sm font-medium transition-colors relative",
-                          pathname === tool.href
-                            ? "bg-primary text-primary-foreground"
-                            : "hover:bg-muted"
-                        )}
-                        onClick={() => setOpen(false)}
-                      >
-                        <div className="flex items-center justify-between">
-                          {tool.name}
-                          {tool.isNew && (
-                            <div className="inline-flex ml-2">
-                              <div className="flex items-center gap-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs font-medium px-2 py-0.5 rounded-md shadow-sm">
-                                <span className="relative flex h-1.5 w-1.5">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
-                                </span>
-                                New
-                              </div>
-                            </div>
+                <div className="h-[calc(100vh-160px)] overflow-y-auto pr-2">
+                  <ul className="space-y-2">
+                    {filteredTools.map((tool) => (
+                      <li key={tool.href}>
+                        <Link
+                          href={tool.href}
+                          className={cn(
+                            "block px-3 py-2 rounded-md text-sm font-medium transition-colors relative",
+                            pathname === tool.href
+                              ? "bg-primary text-primary-foreground"
+                              : "hover:bg-muted"
                           )}
-                        </div>
-                      </Link>
-                    </li>
-                  ))}
-                  
-                  {filteredTools.length === 0 && (
-                    <li className="px-3 py-4 text-center text-sm text-muted-foreground">
-                      No tools found matching &ldquo;{searchQuery}&rdquo;
-                    </li>
-                  )}
-                </ul>
+                          onClick={() => setOpen(false)}
+                        >
+                          <div className="flex items-center justify-between">
+                            {tool.name}
+                            {tool.isNew && (
+                              <div className="inline-flex ml-2">
+                                <div className="flex items-center gap-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs font-medium px-2 py-0.5 rounded-md shadow-sm">
+                                  <span className="relative flex h-1.5 w-1.5">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
+                                  </span>
+                                  New
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
+                    
+                    {filteredTools.length === 0 && (
+                      <li className="px-3 py-4 text-center text-sm text-muted-foreground">
+                        No tools found matching &ldquo;{searchQuery}&rdquo;
+                      </li>
+                    )}
+                  </ul>
+                </div>
               </div>
             </SheetContent>
           </Sheet>
