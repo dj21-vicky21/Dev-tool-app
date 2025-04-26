@@ -1,88 +1,83 @@
 "use client";
 
-import React, { useRef, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Download, QrCodeIcon } from "lucide-react";
-import QRCode from "qrcode";
-import { useToast } from "@/hooks/use-toast";
+import React, { useState } from "react";
+import { TabSelector } from "./components/TabSelector";
+import { DynamicForm } from "./components/DynamicForm";
+import { QRSettings } from "./components/QRSettings";
+import { QRCodeDisplay } from "./components/QRCodeDisplay";
+import { 
+  QRCodeType, 
+  QRCodeSettings, 
+  DEFAULT_QR_SETTINGS 
+} from "./components/types";
 
-function QrGenerator() {
-  const [isQrGenerated, setIsQrGenerated] = useState<boolean>(false);
-  const convasRef = useRef<HTMLCanvasElement>(null)
-  const [userInput, setUserInput] = useState<string>("");
-  const { toast } = useToast();
 
-  const handleGenerateQRCode = () => {
-    try {
+export default function QrGenerator() {
+  // State for QR code data and settings
+  const [activeTab, setActiveTab] = useState<QRCodeType>("text");
+  const [qrData, setQrData] = useState<string>("");
+  const [settings, setSettings] = useState<QRCodeSettings>(DEFAULT_QR_SETTINGS);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  
 
-      QRCode.toCanvas(convasRef.current, userInput,{version: 9 , errorCorrectionLevel:"L", scale:7} ,function (error) {
-        console.log(userInput)
-        if (error) throw error
-        console.log('success!');
-        setIsQrGenerated(true)
-      })
-
-    } catch (error) {
-      console.log(error);
-      toast({
-        title: "Failed",
-        description: "Max character limit of 230 exceeded!",
-        variant: "destructive"
-      })
-    }
+  
+  // Handle QR code generation
+  const handleGenerateQR = (data: string) => {
+    setIsGenerating(true);
+    setQrData("");
+    
+    // Small delay to allow for loading state to show
+    setTimeout(() => {
+      setQrData(data);
+      setIsGenerating(false);
+    }, 300);
   };
-
-   // Function to handle the download of the QR code as an image
-   const handleDownloadQRCode = () => {
-    if (convasRef.current) {
-      const imageUrl = convasRef.current.toDataURL("image/png"); 
-      const link = document.createElement("a"); 
-      link.href = imageUrl; 
-      link.download = "qrcode.png";
-      link.click(); 
-    }
+  
+  // Handle settings changes
+  const handleSettingsChange = (newSettings: Partial<QRCodeSettings>) => {
+    setSettings(prev => ({
+      ...prev,
+      ...newSettings
+    }));
   };
+  
 
+  
+
+  
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex items-center justify-between">
         <p className="text-muted-foreground">
-          Easily generate secure, custom QR codes for URLs, text, or any data
-          you need.
+          Create customized QR codes for various uses with advanced styling options
         </p>
+        
       </div>
-
-      <Card>
-        <CardContent className="py-6 px-3">
-          <div className="flex gap-2">
-            <Input
-              max={230}
-              onChange={(e) => setUserInput(e.target.value)}
-              className="font-mono"
-              placeholder="Enter data to generate QR code"
+      
+      <div className="space-y-6">
+        <TabSelector activeTab={activeTab} onChange={setActiveTab} />
+        
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-6">
+            <DynamicForm 
+              type={activeTab}
+              onGenerateData={handleGenerateQR}
+              isGenerating={isGenerating}
             />
-            <Button variant="outline" size="icon" disabled={!userInput} onClick={handleGenerateQRCode}>
-              <QrCodeIcon className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon" disabled={!isQrGenerated} onClick={handleDownloadQRCode}>
-              <Download className="h-4 w-4" />
-            </Button>
+            
+            <QRSettings 
+              settings={settings}
+              onSettingsChange={handleSettingsChange}
+            />
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="py-6 px-3">
-        <div className="flex gap-2 items-center justify-center" id="container">
-             <canvas ref={convasRef} id="canvas" 
-              style={{ width: '250px', height: '250px' }}  />
-          </div>
-        </CardContent>
-      </Card>
+          
+          <QRCodeDisplay 
+            data={qrData} 
+            settings={settings}
+            isGenerating={isGenerating}
+          />
+        </div>
+      </div>
     </div>
   );
 }
-
-export default QrGenerator;
