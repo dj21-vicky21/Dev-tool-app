@@ -1,4 +1,4 @@
-import { Palette, KeyRound, Lock, FileCode, FileJson, FileSpreadsheet, QrCode, Text, Code2, Edit2, Paintbrush, Layers, Ruler } from "lucide-react"
+import { Palette, KeyRound, Lock, FileCode, FileJson, FileSpreadsheet, QrCode, Text, Code2, Edit2, Paintbrush, Layers, Ruler, BackpackIcon } from "lucide-react"
 import { Tool } from "./types"
 
 export const tools: Tool[] = [
@@ -77,7 +77,7 @@ export const tools: Tool[] = [
     description: "Edit SVG colors interactively",
     href: "/tool/svg-color-editor",
     icon: Edit2,
-    isNew: true
+    isNew: false
   },
   {
     name: "Gradient Generator",
@@ -98,6 +98,13 @@ export const tools: Tool[] = [
     description: "Convert between different CSS units like px, em, rem, vh, vw, and more",
     href: "/tool/css-unit-converter",
     icon: Ruler,
+    isNew: false
+  },
+  {
+    name: "Shadow Generator",
+    description: "Generate CSS box and text shadows with ease",
+    href: "/tool/shadow-generator",
+    icon: BackpackIcon,
     isNew: true
   }
 ]
