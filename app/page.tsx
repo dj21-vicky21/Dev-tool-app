@@ -37,8 +37,8 @@ export default function Home() {
             </span>
           </div>
           
-          <h1 className="text-6xl font-bold tracking-tight">
-            <AuroraText colors={["#ec4899", "#9333ea"]}>DevGarage</AuroraText>
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+            <AuroraText colors={["#ec4899", "#9333ea"]}>All-in-One Development Tools</AuroraText>
           </h1>
           
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -93,7 +93,7 @@ export default function Home() {
       <div className="mt-8 border-t border-border">
         <div className="container mx-auto py-8 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Have feedback or suggestions? We&apos;d love to hear from you.
+            Have feedback or suggestions? I&apos;d love to hear from you.
           </p>
           <Link href="/tool/feedback">
             <Button variant="outline" size="sm" className="flex items-center gap-1">
