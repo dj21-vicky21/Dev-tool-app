@@ -55,7 +55,7 @@ export default function ToolsLayout({
             </SheetTrigger>
             <SheetContent side="left" className="w-[280px] sm:w-[350px]">
               <SheetHeader>
-                <SheetTitle className="text-xl">Dev tools</SheetTitle>
+                <SheetTitle className="text-xl">Tools</SheetTitle>
               </SheetHeader>
               <div className="py-4">
                 <div className="relative mb-4">
@@ -121,7 +121,7 @@ export default function ToolsLayout({
             </SheetContent>
           </Sheet>
           <h1 className="text-2xl font-bold">
-            {getCurrentToolName(pathname) || "Dev Tools"}
+            {getCurrentToolName(pathname) || "Tools"}
           </h1>
         </div>
         {!pathname.includes('/feedback') && (
