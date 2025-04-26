@@ -107,7 +107,7 @@ export default function PasswordGenerator() {
             <Slider
               value={[length]}
               onValueChange={(value) => setLength(value[0])}
-              min={8}
+              min={3}
               max={32}
               step={1}
             />
