@@ -92,7 +92,12 @@ export default function ToolsLayout({
                           )}
                           onClick={() => setOpen(false)}
                         >
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            {tool.icon && (
+                              <div className="mr-2">
+                                <tool.icon className="h-4 w-4" />
+                              </div>
+                            )}
                             {tool.name}
                             {tool.isNew && (
                               <div className="inline-flex ml-2">
