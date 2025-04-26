@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { ColorStop } from "./types";
-// import { Button } from "@/components/ui/button";
-// import { Wand2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 // Predefined gradient presets
 export const gradientPresets = [
@@ -513,55 +514,110 @@ interface PredefinedGradientsProps {
 }
 
 export default function PredefinedGradients({ onSelectGradient }: PredefinedGradientsProps) {
-  // const generateRandomGradient = () => {
-  //   const randomColor = () => {
-  //     const letters = "0123456789ABCDEF";
-  //     let color = "#";
-  //     for (let i = 0; i < 6; i++) {
-  //       color += letters[Math.floor(Math.random() * 16)];
-  //     }
-  //     return color;
-  //   };
+  const [presets, setPresets] = useState(gradientPresets);
+  
+  // Color palettes for more harmonious gradients
+  const colorPalettes = [
+    // Blues
+    ["#1A2980", "#26D0CE", "#21D4FD", "#B721FF"],
+    // Purples
+    ["#6A11CB", "#2575FC", "#8E2DE2", "#4A00E0"],
+    // Reds
+    ["#FF416C", "#FF4B2B", "#f5576c", "#f093fb"],
+    // Greens
+    ["#00b09b", "#96c93d", "#02AABD", "#00CDAC"],
+    // Yellows/Oranges
+    ["#F7971E", "#FFD200", "#f12711", "#f5af19"],
+    // Dark
+    ["#0F2027", "#203A43", "#2C5364", "#4b6cb7"],
+    // Pink/Purple
+    ["#EC6EAD", "#3494E6", "#D585FF", "#00FFEE"],
+    // Sunset colors
+    ["#FA8BFF", "#2BD2FF", "#2BFF88", "#FF9A8B"],
+  ];
+  
+  
+  const regeneratePresets = () => {
+    // Generate completely new random gradients with better aesthetics
+    const newPresets = Array.from({ length: presets.length }, (_, index) => {
+      // Select a palette for each gradient
+      const paletteIndex = Math.floor(Math.random() * colorPalettes.length);
+      const palette = colorPalettes[paletteIndex];
+      
+      const numStops = 2 + Math.floor(Math.random() * 2); // 2-3 stops for cleaner gradients
+      const stops: ColorStop[] = [];
+      
+      // Use colors from the same palette
+      const usedIndices = new Set<number>();
+      
+      for (let i = 0; i < numStops; i++) {
+        // Avoid using the same color twice in small gradients
+        let colorIndex;
+        do {
+          colorIndex = Math.floor(Math.random() * palette.length);
+        } while (usedIndices.has(colorIndex) && usedIndices.size < palette.length);
+        
+        usedIndices.add(colorIndex);
+        const color = palette[colorIndex];
+        
+        // More even distribution of stops
+        const position = i === 0 ? 0 : i === numStops - 1 ? 100 : 
+                         Math.floor(100 / (numStops - 1) * i);
+        
+        stops.push({
+          color,
+          position
+        });
+      }
+      
+      // Sort by position
+      stops.sort((a, b) => a.position - b.position);
+      
+      // Bias toward linear gradients (70%)
+      const type = Math.random() > 0.3 ? "linear" as const : "radial" as const;
+      
+      // Use clean angles for linear gradients
+      const angles = [0, 45, 90, 135, 180, 225, 270, 315];
+      const rotation = type === "linear" ? 
+                      angles[Math.floor(Math.random() * angles.length)] : 0;
+      
+      // More descriptive gradient names
+      const gradientTypes = ["Smooth", "Blend", "Flow", "Soft", "Elegant", "Silky", "Gentle", "Dreamy"];
+      const gradientType = gradientTypes[Math.floor(Math.random() * gradientTypes.length)];
+      
+      const colorNames = ["Blue", "Purple", "Red", "Green", "Orange", "Dark", "Pink", "Sunset"];
+      const colorName = colorNames[paletteIndex];
+      
+      return {
+        name: `${gradientType} ${colorName} ${index + 1}`,
+        stops,
+        type,
+        rotation
+      };
+    });
     
-  //   const numStops = 2 + Math.floor(Math.random() * 3); // 2-4 stops
-    
-  //   const newStops: ColorStop[] = [];
-    
-  //   for (let i = 0; i < numStops; i++) {
-  //     newStops.push({
-  //       color: randomColor(),
-  //       position: i === 0 ? 0 : i === numStops - 1 ? 100 : Math.floor(Math.random() * 80) + 10,
-  //     });
-  //   }
-    
-  //   // Sort by position
-  //   newStops.sort((a, b) => a.position - b.position);
-    
-  //   // 50% chance of radial gradient
-  //   const type = Math.random() > 0.5 ? "linear" as const : "radial" as const;
-  //   // Random rotation between 0-360 for linear gradients
-  //   const rotation = Math.floor(Math.random() * 360);
-    
-  //   onSelectGradient(newStops, type, rotation);
-  // };
+    setPresets(newPresets);
+  };
 
   return (
     <div className="space-y-3">
       <div className="flex justify-between items-center">
         <Label className="text-lg font-semibold">Predefined Gradients</Label>
-        {/* <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={generateRandomGradient}
-          className="gap-1"
-        >
-          <Wand2 className="h-3.5 w-3.5" />
-          Random
-        </Button> */}
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={regeneratePresets}
+            className="gap-1"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            Regenerate All
+          </Button>
+        </div>
       </div>
       
         <div className="flex gap-3 flex-wrap p-2">
-          {gradientPresets.map((preset, index) => (
+          {presets.map((preset, index) => (
             <button
               key={index}
               className="size-48 rounded-md overflow-hidden border border-border hover:ring-2 hover:ring-primary focus:outline-none focus:ring-2 focus:ring-primary transition-all"
