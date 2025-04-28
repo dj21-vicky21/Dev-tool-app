@@ -93,7 +93,7 @@ export default function Home() {
       <div className="mt-8 border-t border-border">
         <div className="container mx-auto py-8 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Have feedback or suggestions? I&apos;d love to hear from you.
+            Have feedback or suggestions? We&apos;d love to hear from you.
           </p>
           <Link href="/tool/feedback">
             <Button variant="outline" size="sm" className="flex items-center gap-1">
