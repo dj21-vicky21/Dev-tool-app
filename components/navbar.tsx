@@ -8,7 +8,6 @@ import {
   Sun,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import Image from "next/image";
 // import {
 //   DropdownMenu,
 //   DropdownMenuContent,
@@ -31,7 +30,7 @@ export function Navigation() {
       <div className="container flex h-16 items-center px-4  mx-auto">
         <div className="flex items-center space-x-4">
           <Link href="/" className="flex items-center space-x-2">
-            <Image src="/favicon.svg" alt="DevGarage" width={32} height={32} className="dark:bg-white rounded-full"/>
+            {/* <Image src="/favicon.svg" alt="DevGarage" width={32} height={32} className="dark:bg-white rounded-full"/> */}
             <span className="font-bold">DevGarage</span>
           </Link>
         </div>
