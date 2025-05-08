@@ -6,9 +6,9 @@ import axiosRetry from 'axios-retry';
 export async function POST(request: Request) {
   // Basic Auth check
   const authHeader = request.headers.get('authorization');
-  const expectedUser = process.env.BASIC_AUTH_USER;
-  const expectedPass = process.env.BASIC_AUTH_PASSWORD;
-  const web3formsAccessKey = process.env.WEB3FORMS_ACCESS_KEY;
+  const expectedUser = process.env.NEXT_PUBLIC_BASIC_AUTH_USER;
+  const expectedPass = process.env.NEXT_PUBLIC_BASIC_AUTH_PASSWORD;
+  const web3formsAccessKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
 
   const expected =
     'Basic ' + Buffer.from(`${expectedUser}:${expectedPass}`).toString('base64');

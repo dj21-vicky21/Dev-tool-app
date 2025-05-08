@@ -15,10 +15,10 @@ axiosRetry(client, {
 
 export async function sendEmail(email: string, feedbackType: string, toolName: string, message: string) {
    try {
-    const username = process.env.BASIC_AUTH_USER;
-    const password = process.env.BASIC_AUTH_PASSWORD;
-    const baseUrl = process.env.BASE_URL;
-    
+    const username = process.env.NEXT_PUBLIC_BASIC_AUTH_USER;
+    const password = process.env.NEXT_PUBLIC_BASIC_AUTH_PASSWORD;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
     if (!username || !password) {
         throw new Error('Authentication credentials not configured');
     }
