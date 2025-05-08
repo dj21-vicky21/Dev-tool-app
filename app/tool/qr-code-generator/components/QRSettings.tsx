@@ -2,8 +2,7 @@ import React from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Settings2, Upload } from 'lucide-react';
+import { Settings2 } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -25,27 +24,6 @@ interface QRSettingsProps {
 }
 
 export function QRSettings({ settings, onSettingsChange }: QRSettingsProps) {
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    // Check if the file is an image and not too large
-    if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file');
-      return;
-    }
-    
-    if (file.size > 1024 * 100) { // 100KB limit
-      alert('Logo must be less than 100KB');
-      return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      onSettingsChange({ logoUrl: event.target?.result as string });
-    };
-    reader.readAsDataURL(file);
-  };
   
   return (
     <Accordion type="single" collapsible className="w-full">
@@ -126,45 +104,6 @@ export function QRSettings({ settings, onSettingsChange }: QRSettingsProps) {
               </Select>
               <p className="text-xs text-muted-foreground">
                 Higher correction levels make QR codes more resistant to damage but increase complexity.
-              </p>
-            </div>
-            
-            <div className="grid gap-2">
-              <Label>Logo (optional)</Label>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" asChild className="flex items-center gap-2">
-                  <label>
-                    <Upload className="h-4 w-4" />
-                    <span>Upload Logo</span>
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handleLogoUpload} 
-                      className="hidden" 
-                    />
-                  </label>
-                </Button>
-                {settings.logoUrl && (
-                  <Button 
-                    variant="outline" 
-                    onClick={() => onSettingsChange({ logoUrl: undefined })}
-                    size="sm"
-                  >
-                    Remove
-                  </Button>
-                )}
-              </div>
-              {settings.logoUrl && (
-                <div className="mt-2 border rounded p-2 flex justify-center">
-                  <img 
-                    src={settings.logoUrl} 
-                    alt="Logo preview" 
-                    className="max-h-16 max-w-full object-contain" 
-                  />
-                </div>
-              )}
-              <p className="text-xs text-muted-foreground">
-                For best results, use a small, simple logo with high contrast.
               </p>
             </div>
           </div>

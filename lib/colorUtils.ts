@@ -9,14 +9,14 @@ import colorNames from './colorNames';
 /**
  * Validate a hex color
  */
-export function isValidHex(hex: string): boolean {
+function isValidHex(hex: string): boolean {
   return /^#([A-Fa-f0-9]{3,4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/.test(hex);
 }
 
 /**
  * Convert hex to RGB
  */
-export function hexToRgb(hex: string): RGB {
+function hexToRgb(hex: string): RGB {
   // Remove the '#' if it's there
   hex = hex.replace(/^#/, "");
 
@@ -62,7 +62,7 @@ export function hexToRgb(hex: string): RGB {
 /**
  * Convert RGB to Hex
  */
-export function rgbToHex({ r, g, b, a = 1 }: RGB): string {
+function rgbToHex({ r, g, b, a = 1 }: RGB): string {
   // Clamp values to ensure they're between 0 and 255
   r = Math.min(255, Math.max(0, Math.round(r)));
   g = Math.min(255, Math.max(0, Math.round(g)));
@@ -87,7 +87,7 @@ export function rgbToHex({ r, g, b, a = 1 }: RGB): string {
 /**
  * Convert RGB to HSL
  */
-export function rgbToHsl({ r, g, b, a = 1 }: RGB): HSL {
+function rgbToHsl({ r, g, b, a = 1 }: RGB): HSL {
   r /= 255;
   g /= 255;
   b /= 255;
@@ -128,7 +128,7 @@ export function rgbToHsl({ r, g, b, a = 1 }: RGB): HSL {
 /**
  * Convert HSL to RGB
  */
-export function hslToRgb({ h, s, l, a = 1 }: HSL): RGB {
+function hslToRgb({ h, s, l, a = 1 }: HSL): RGB {
   h /= 360;
   s /= 100;
   l /= 100;
@@ -166,7 +166,7 @@ export function hslToRgb({ h, s, l, a = 1 }: HSL): RGB {
 /**
  * Convert RGB to HSV
  */
-export function rgbToHsv({ r, g, b, a = 1 }: RGB): HSV {
+function rgbToHsv({ r, g, b, a = 1 }: RGB): HSV {
   r /= 255;
   g /= 255;
   b /= 255;
@@ -204,7 +204,7 @@ export function rgbToHsv({ r, g, b, a = 1 }: RGB): HSV {
 /**
  * Convert HSV to RGB
  */
-export function hsvToRgb({ h, s, v, a = 1 }: HSV): RGB {
+ function hsvToRgb({ h, s, v, a = 1 }: HSV): RGB {
   h /= 360;
   s /= 100;
   v /= 100;
@@ -249,7 +249,7 @@ export function hsvToRgb({ h, s, v, a = 1 }: HSV): RGB {
 /**
  * Convert HSV to HSL
  */
-export function hsvToHsl(hsv: HSV): HSL {
+ function hsvToHsl(hsv: HSV): HSL {
   const rgb = hsvToRgb(hsv);
   return rgbToHsl(rgb);
 }
@@ -257,7 +257,7 @@ export function hsvToHsl(hsv: HSV): HSL {
 /**
  * Convert HSL to HSV
  */
-export function hslToHsv(hsl: HSL): HSV {
+ function hslToHsv(hsl: HSL): HSV {
   const rgb = hslToRgb(hsl);
   return rgbToHsv(rgb);
 }
@@ -265,7 +265,7 @@ export function hslToHsv(hsl: HSL): HSV {
 /**
  * Convert RGB to CMYK
  */
-export function rgbToCmyk({ r, g, b }: RGB): CMYK {
+ function rgbToCmyk({ r, g, b }: RGB): CMYK {
   r /= 255;
   g /= 255;
   b /= 255;
@@ -291,7 +291,7 @@ export function rgbToCmyk({ r, g, b }: RGB): CMYK {
 /**
  * Convert CMYK to RGB
  */
-export function cmykToRgb({ c, m, y, k }: CMYK): RGB {
+ function cmykToRgb({ c, m, y, k }: CMYK): RGB {
   c /= 100;
   m /= 100;
   y /= 100;
@@ -312,7 +312,7 @@ export function cmykToRgb({ c, m, y, k }: CMYK): RGB {
 /**
  * Convert hex to HSL
  */
-export function hexToHsl(hex: string): HSL {
+ function hexToHsl(hex: string): HSL {
   const rgb = hexToRgb(hex);
   return rgbToHsl(rgb);
 }
@@ -320,7 +320,7 @@ export function hexToHsl(hex: string): HSL {
 /**
  * Convert HSL to hex
  */
-export function hslToHex(hsl: HSL): string {
+ function hslToHex(hsl: HSL): string {
   const rgb = hslToRgb(hsl);
   return rgbToHex(rgb);
 }
@@ -328,7 +328,7 @@ export function hslToHex(hsl: HSL): string {
 /**
  * Convert hex to HSV
  */
-export function hexToHsv(hex: string): HSV {
+ function hexToHsv(hex: string): HSV {
   const rgb = hexToRgb(hex);
   return rgbToHsv(rgb);
 }
@@ -336,7 +336,7 @@ export function hexToHsv(hex: string): HSV {
 /**
  * Convert HSV to hex
  */
-export function hsvToHex(hsv: HSV): string {
+ function hsvToHex(hsv: HSV): string {
   const rgb = hsvToRgb(hsv);
   return rgbToHex(rgb);
 }
@@ -344,7 +344,7 @@ export function hsvToHex(hsv: HSV): string {
 /**
  * Convert hex to CMYK
  */
-export function hexToCmyk(hex: string): CMYK {
+ function hexToCmyk(hex: string): CMYK {
   const rgb = hexToRgb(hex);
   return rgbToCmyk(rgb);
 }
@@ -352,7 +352,7 @@ export function hexToCmyk(hex: string): CMYK {
 /**
  * Convert CMYK to hex
  */
-export function cmykToHex(cmyk: CMYK): string {
+ function cmykToHex(cmyk: CMYK): string {
   const rgb = cmykToRgb(cmyk);
   return rgbToHex(rgb);
 }
@@ -360,7 +360,7 @@ export function cmykToHex(cmyk: CMYK): string {
 /**
  * Generate a complementary color
  */
-export function getComplementaryColor(hex: string): string {
+ function getComplementaryColor(hex: string): string {
   const { h, s, l, a } = hexToHsl(hex);
   const newH = (h + 180) % 360;
   return hslToHex({ h: newH, s, l, a });
@@ -369,7 +369,7 @@ export function getComplementaryColor(hex: string): string {
 /**
  * Generate analogous colors (colors that are next to each other on the color wheel)
  */
-export function getAnalogousColors(hex: string, count = 3, angle = 30): string[] {
+ function getAnalogousColors(hex: string, count = 3, angle = 30): string[] {
   const { h, s, l, a } = hexToHsl(hex);
   const colors: string[] = [hex];
   
@@ -403,7 +403,7 @@ export function getAnalogousColors(hex: string, count = 3, angle = 30): string[]
 /**
  * Generate a triad color scheme (three colors equally spaced on the color wheel)
  */
-export function getTriadColors(hex: string): string[] {
+ function getTriadColors(hex: string): string[] {
   const { h, s, l, a } = hexToHsl(hex);
   return [
     hex,
@@ -415,7 +415,7 @@ export function getTriadColors(hex: string): string[] {
 /**
  * Generate a tetrad color scheme (four colors arranged in two complementary pairs)
  */
-export function getTetradColors(hex: string): string[] {
+ function getTetradColors(hex: string): string[] {
   const { h, s, l, a } = hexToHsl(hex);
   return [
     hex,
@@ -428,7 +428,7 @@ export function getTetradColors(hex: string): string[] {
 /**
  * Generate shades of a color (mixtures with black)
  */
-export function getShades(hex: string, count = 5): string[] {
+ function getShades(hex: string, count = 5): string[] {
   const { h, s, a } = hexToHsl(hex);
   const shades: string[] = [];
   
@@ -443,7 +443,7 @@ export function getShades(hex: string, count = 5): string[] {
 /**
  * Generate tints of a color (mixtures with white)
  */
-export function getTints(hex: string, count = 5): string[] {
+ function getTints(hex: string, count = 5): string[] {
   const { h, s, a } = hexToHsl(hex);
   const tints: string[] = [];
   
@@ -458,7 +458,7 @@ export function getTints(hex: string, count = 5): string[] {
 /**
  * Calculate contrast ratio between two colors (WCAG)
  */
-export function getContrastRatio(color1: string, color2: string): number {
+ function getContrastRatio(color1: string, color2: string): number {
   const getLuminance = (hex: string): number => {
     const rgb = hexToRgb(hex);
     
@@ -482,21 +482,21 @@ export function getContrastRatio(color1: string, color2: string): number {
 /**
  * Check if a color is WCAG AA compliant for normal text (4.5:1)
  */
-export function isWCAGAACompliant(foreground: string, background: string): boolean {
+ function isWCAGAACompliant(foreground: string, background: string): boolean {
   return getContrastRatio(foreground, background) >= 4.5;
 }
 
 /**
  * Check if a color is WCAG AAA compliant for normal text (7:1)
  */
-export function isWCAGAAACompliant(foreground: string, background: string): boolean {
+ function isWCAGAAACompliant(foreground: string, background: string): boolean {
   return getContrastRatio(foreground, background) >= 7;
 }
 
 /**
  * Format RGB as CSS string
  */
-export function formatRgb({ r, g, b, a = 1 }: RGB): string {
+ function formatRgb({ r, g, b, a = 1 }: RGB): string {
   return a < 1 
     ? `rgba(${r}, ${g}, ${b}, ${a.toFixed(2)})` 
     : `rgb(${r}, ${g}, ${b})`;
@@ -505,7 +505,7 @@ export function formatRgb({ r, g, b, a = 1 }: RGB): string {
 /**
  * Format HSL as CSS string
  */
-export function formatHsl({ h, s, l, a = 1 }: HSL): string {
+ function formatHsl({ h, s, l, a = 1 }: HSL): string {
   return a < 1 
     ? `hsla(${h}, ${s}%, ${l}%, ${a.toFixed(2)})` 
     : `hsl(${h}, ${s}%, ${l}%)`;
@@ -514,21 +514,21 @@ export function formatHsl({ h, s, l, a = 1 }: HSL): string {
 /**
  * Format HSV as CSS string (Note: HSV is not directly supported in CSS)
  */
-export function formatHsv({ h, s, v, a = 1 }: HSV): string {
+ function formatHsv({ h, s, v, a = 1 }: HSV): string {
   return `hsv(${h}, ${s}%, ${v}%${a < 1 ? `, ${a.toFixed(2)}` : ''})`;
 }
 
 /**
  * Format CMYK as string
  */
-export function formatCmyk({ c, m, y, k }: CMYK): string {
+ function formatCmyk({ c, m, y, k }: CMYK): string {
   return `cmyk(${c}%, ${m}%, ${y}%, ${k}%)`;
 }
 
 /**
  * Parse a CSS color string to get its hex value
  */
-export function parseColorString(colorStr: string): string | null {
+ function parseColorString(colorStr: string): string | null {
   // Handle hex
   if (colorStr.startsWith('#')) {
     return isValidHex(colorStr) ? colorStr.toLowerCase() : null;
@@ -573,7 +573,7 @@ export function parseColorString(colorStr: string): string | null {
 /**
  * Get the closest named color to a given hex
  */
-export function getClosestNamedColor(hex: string): { name: string, hex: string, distance: number } {
+ function getClosestNamedColor(hex: string): { name: string, hex: string, distance: number } {
   const rgb1 = hexToRgb(hex);
   let closestColor = { name: "", hex: "", distance: Infinity };
   
@@ -598,7 +598,7 @@ export function getClosestNamedColor(hex: string): { name: string, hex: string, 
 /**
  * Convert color to a CSS variable-friendly string
  */
-export function getColorAsVariable(hex: string): string {
+ function getColorAsVariable(hex: string): string {
   // Returns without the # to make it CSS variable-friendly
   return hex.replace('#', '');
 }
@@ -606,7 +606,7 @@ export function getColorAsVariable(hex: string): string {
 /**
  * Get color brightness (0-255)
  */
-export function getColorBrightness(hex: string): number {
+ function getColorBrightness(hex: string): number {
   const { r, g, b } = hexToRgb(hex);
   return (r * 299 + g * 587 + b * 114) / 1000;
 }
@@ -614,18 +614,18 @@ export function getColorBrightness(hex: string): number {
 /**
  * Check if a color is light (true) or dark (false)
  */
-export function isLightColor(hex: string): boolean {
+ function isLightColor(hex: string): boolean {
   return getColorBrightness(hex) > 128;
 }
 
 /**
  * Get a readable text color (black or white) based on background
  */
-export function getReadableTextColor(backgroundColor: string): string {
+ function getReadableTextColor(backgroundColor: string): string {
   return isLightColor(backgroundColor) ? '#000000' : '#ffffff';
 }
 
-export default {
+const colorUtils = {
   hexToRgb,
   rgbToHex,
   rgbToHsl,
@@ -661,4 +661,6 @@ export default {
   getColorBrightness,
   isLightColor,
   getReadableTextColor
-}; 
+};
+
+export default colorUtils; 

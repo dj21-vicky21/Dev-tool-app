@@ -50,23 +50,23 @@ function extractUniqueColors(elements: ColorableElement[]): string[] {
 }
 
 // Add debounce utility function at the top of the file with other imports
-function debounce<Args extends unknown[]>(
-  func: (...args: Args) => void,
-  wait: number
-): (...args: Args) => void {
-  let timeout: NodeJS.Timeout | null = null;
+// function debounce<Args extends unknown[]>(
+//   func: (...args: Args) => void,
+//   wait: number
+// ): (...args: Args) => void {
+//   let timeout: NodeJS.Timeout | null = null;
   
-  return (...args: Args) => {
-    if (timeout) {
-      clearTimeout(timeout);
-    }
+//   return (...args: Args) => {
+//     if (timeout) {
+//       clearTimeout(timeout);
+//     }
     
-    timeout = setTimeout(() => {
-      func(...args);
-      timeout = null;
-    }, wait);
-  };
-}
+//     timeout = setTimeout(() => {
+//       func(...args);
+//       timeout = null;
+//     }, wait);
+//   };
+// }
 
 // Add interface for color change history
 interface ColorChange {
@@ -158,15 +158,14 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
   const [moveDistance, setMoveDistance] = useState({ x: 0, y: 0 });
 
   // Add debounced toast function that supports React elements
-  const debouncedToast = useCallback(
-    debounce((title: string, description: string | React.ReactNode) => {
-      toast({
-        title,
-        description,
-      });
-    }, 500),
-    []
-  );
+  // const debouncedToast = useCallback((title: string, description: string | React.ReactNode) => {
+  //   debounce((title: string, description: string | React.ReactNode) => {
+  //     toast({
+  //       title,
+  //       description,
+  //     });
+  //   }, 500)(title, description);
+  // }, []);
 
   // Add state for undo/redo functionality
   const [colorHistory, setColorHistory] = useState<ColorChange[]>([]);
@@ -606,20 +605,20 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
           setIsSvgModified(true);
           
           // Show notification about the color change
-          debouncedToast(
-            "Color updated",
-            pendingColorChange.elements.length > 1 
-              ? <div className="flex items-center">
-                  <span>Updated {pendingColorChange.elements.length} elements to </span>
-                  <div className="h-4 w-4 mx-1 inline-block border" style={{ backgroundColor: finalColor || 'transparent' }}></div>
-                  <code className="bg-secondary text-secondary-foreground px-1 rounded">{finalColor || 'transparent'}</code>
-                </div>
-              : <div className="flex items-center">
-                  <span>Updated {pendingColorChange.elements[0].property} to </span>
-                  <div className="h-4 w-4 mx-1 inline-block border" style={{ backgroundColor: finalColor || 'transparent' }}></div>
-                  <code className="bg-secondary text-secondary-foreground px-1 rounded">{finalColor || 'transparent'}</code>
-                </div>
-          );
+          // debouncedToast(
+          //   "Color updated",
+          //   pendingColorChange.elements.length > 1 
+          //     ? <div className="flex items-center">
+          //         <span>Updated {pendingColorChange.elements.length} elements to </span>
+          //         <div className="h-4 w-4 mx-1 inline-block border" style={{ backgroundColor: finalColor || 'transparent' }}></div>
+          //         <code className="bg-secondary text-secondary-foreground px-1 rounded">{finalColor || 'transparent'}</code>
+          //       </div>
+          //     : <div className="flex items-center">
+          //         <span>Updated {pendingColorChange.elements[0].property} to </span>
+          //         <div className="h-4 w-4 mx-1 inline-block border" style={{ backgroundColor: finalColor || 'transparent' }}></div>
+          //         <code className="bg-secondary text-secondary-foreground px-1 rounded">{finalColor || 'transparent'}</code>
+          //       </div>
+          // );
         }
       } else {
         console.log('Colors too similar after normalization, skipping history entry');
@@ -631,7 +630,7 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
     // Always reset dragging state
     setIsColorPickerDragging(false);
     setPendingColorChange(null);
-  }, [isColorPickerDragging, pendingColorChange, colorHistory, currentHistoryIndex, getCurrentColor, lastStableColorRef, normalizeColor, areColorsSimilar, debouncedToast]);
+  }, [isColorPickerDragging, pendingColorChange, colorHistory, currentHistoryIndex, getCurrentColor, lastStableColorRef, normalizeColor, areColorsSimilar]);
 
   // Improved undo with better color comparison
   const handleUndo = useCallback(() => {

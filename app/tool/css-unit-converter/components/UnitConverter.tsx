@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -70,7 +70,7 @@ export default function UnitConverter() {
   };
 
   // Get current units based on active tab
-  const getCurrentUnits = () => {
+  const getCurrentUnits = useCallback(() => {
     switch (activeTab) {
       case "length":
         return LENGTH_UNITS;
@@ -83,14 +83,14 @@ export default function UnitConverter() {
       default:
         return LENGTH_UNITS;
     }
-  };
+  }, [activeTab]);
 
   // Reset unit when changing tabs
   useEffect(() => {
     const units = getCurrentUnits();
     setInputUnit(units[0]);
     setTargetUnit(units[1]);
-  }, [activeTab]);
+  }, [activeTab, getCurrentUnits]);
 
   // Copy value to clipboard
   const copyToClipboard = (value: string) => {

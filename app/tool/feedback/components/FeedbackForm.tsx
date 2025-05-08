@@ -23,12 +23,12 @@ import {
 } from "@/components/ui/select";
 import { CheckIcon, SendIcon } from "lucide-react";
 import { tools } from "@/lib/tools";
-
+import { sendEmail } from "@/app/actions/sendmail";
 
 export default function FeedbackForm() {
   const searchParams = useSearchParams();
-  const toolParam = searchParams.get('tool');
-  
+  const toolParam = searchParams.get("tool");
+
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [feedbackType, setFeedbackType] = useState("feedback");
@@ -38,33 +38,42 @@ export default function FeedbackForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    try {
+      e.preventDefault();
+      setIsSubmitting(true);
+      
+      const response = await sendEmail(email, feedbackType, toolName, message);
 
-    console.log({ email, feedbackType, toolName, message });
+      if (response.success) {
+        // Simulate API call
+        setTimeout(() => {
+          setIsSubmitting(false);
+          setIsSubmitted(true);
 
-    setIsSubmitting(true);
-
-    // Simulate API call
-    setTimeout(() => {
+          // Reset form after 2 seconds
+          setTimeout(() => {
+            setEmail("");
+            setFeedbackType("feedback");
+            setToolName("");
+            setMessage("");
+            setIsSubmitted(false);
+          }, 2500);
+        }, 1500);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to submit feedback. Please try again later.",
+        });
+      }
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
       setIsSubmitting(false);
-      setIsSubmitted(true);
-
       toast({
-        title: "Feedback Submitted",
-        description: "Thank you for your feedback! We'll review it shortly.",
+        title: "Error",
+        description: "Failed to submit feedback. Please try again later.",
       });
-
-      // Reset form after 2 seconds
-      setTimeout(() => {
-        setEmail("");
-        setFeedbackType("feedback");
-        setToolName("");
-        setMessage("");
-        setIsSubmitted(false);
-      }, 2000);
-    }, 1500);
+    }
   };
-
 
   return (
     <div className="container max-w-3xl mx-auto py-6">
@@ -117,10 +126,7 @@ export default function FeedbackForm() {
 
                 <div className="space-y-2">
                   <Label htmlFor="toolName">Related Tool</Label>
-                  <Select 
-                    value={toolName} 
-                    onValueChange={setToolName}
-                  >
+                  <Select value={toolName} onValueChange={setToolName}>
                     <SelectTrigger id="toolName">
                       <SelectValue placeholder="Select a tool (optional)" />
                     </SelectTrigger>
@@ -132,7 +138,7 @@ export default function FeedbackForm() {
                         <SelectItem key={tool.name} value={tool.name}>
                           {tool.name}
                         </SelectItem>
-                      ))} 
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

@@ -43,7 +43,7 @@ export function ColorPicker({ color, onChange }: ColorPickerProps) {
     if (color && color !== hexValue) {
       setHexValue(color);
     }
-  }, [color]);
+  }, [color, hexValue]);
 
   // Format hex and validate
   const formatHex = (hex: string): string => {
