@@ -1,4 +1,4 @@
-import { Palette, KeyRound, Lock, FileCode, FileJson, FileSpreadsheet, QrCode, Text, Code2, Edit2, Paintbrush, Layers, Ruler, BackpackIcon } from "lucide-react"
+import { Palette, KeyRound, Lock, FileCode, FileJson, FileSpreadsheet, QrCode, Text, Code2, Edit2, Paintbrush, Layers, Ruler, BackpackIcon, LayoutGrid } from "lucide-react"
 import { Tool } from "./types"
 
 export const tools: Tool[] = [
@@ -105,6 +105,13 @@ export const tools: Tool[] = [
     description: "Generate CSS box and text shadows with ease",
     href: "/tool/shadow-generator",
     icon: BackpackIcon,
+    isNew: false
+  },
+  {
+    name: "Layout Generator",
+    description: "Generate CSS Grid and Flexbox layouts with both CSS and Tailwind code.",
+    href: "/tool/layout-generator",
+    icon: LayoutGrid,
     isNew: true
   }
 ]
