@@ -1316,61 +1316,107 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
       for (const el of selectedElements) {
         el.classList.remove('selected-element');
       }
-
-      // Get the actual bounding box of all content
-      const bbox = clonedSvg.getBBox();
       
-      // Calculate dimensions with appropriate padding to prevent cropping
-      const padding = Math.max(bbox.width, bbox.height) * 0.15; // Increased padding to 15%
-      const fullWidth = bbox.width + (padding * 2);
-      const fullHeight = bbox.height + (padding * 2);
-      const viewBoxValue = `${bbox.x - padding} ${bbox.y - padding} ${fullWidth} ${fullHeight}`;
-
-      // Remove any transform attributes that might affect positioning
-      clonedSvg.removeAttribute('transform');
-      const allElements = clonedSvg.querySelectorAll('*');
-      allElements.forEach(el => {
-        if (el instanceof SVGElement) {
-          el.style.transform = '';
-          el.removeAttribute('transform');
-        }
-      });
-
-      // Remove any temporary attributes and styles
+      // Remove any temporary styles
       clonedSvg.removeAttribute('style');
       clonedSvg.style.cssText = '';
-
-      // Get the original viewBox from the SVG file (if it exists)
+      
+      // Get the original SVG information from the source
       const originalSvgElement = document.createElement('div');
       originalSvgElement.innerHTML = svgContent;
       const originalSvg = originalSvgElement.querySelector('svg');
-      const originalViewBox = originalSvg?.getAttribute('viewBox');
-      const originalWidth = originalSvg?.getAttribute('width');
-      const originalHeight = originalSvg?.getAttribute('height');
-
-      // Prioritize original viewBox from the source SVG
+      
+      if (!originalSvg) {
+        console.error('Original SVG could not be parsed');
+        return '';
+      }
+      
+      // Retrieve original attributes
+      const originalViewBox = originalSvg.getAttribute('viewBox');
+      const originalWidth = originalSvg.getAttribute('width');
+      const originalHeight = originalSvg.getAttribute('height');
+      
+      // Important: Preserve ALL attributes from the source SVG
+      const preserveAllAttributes = () => {
+        if (!originalSvg) return;
+        
+        // Store all elements by ID from original SVG
+        const originalElements = new Map<string, Element>();
+        originalSvg.querySelectorAll('*[id]').forEach(el => {
+          const id = el.getAttribute('id');
+          if (id) {
+            originalElements.set(id, el);
+          }
+        });
+        
+        // Apply all original attributes to cloned elements
+        clonedSvg.querySelectorAll('*[id]').forEach(el => {
+          const id = el.getAttribute('id');
+          if (id && originalElements.has(id)) {
+            const originalEl = originalElements.get(id)!;
+            
+            // Copy ALL attributes from original element
+            Array.from(originalEl.attributes).forEach(attr => {
+              // Skip id attribute as it's already set and some attributes that should be controlled by our editing
+              if (attr.name !== 'id' && 
+                  attr.name !== 'class' && 
+                  attr.name !== 'style' && 
+                  !(attr.name === 'fill' && el.hasAttribute('fill')) && 
+                  !(attr.name === 'stroke' && el.hasAttribute('stroke'))) {
+                el.setAttribute(attr.name, attr.value);
+              }
+            });
+          }
+        });
+        
+        // Also preserve attributes on the root SVG element itself
+        Array.from(originalSvg.attributes).forEach(attr => {
+          // Skip some attributes we'll set explicitly later
+          if (attr.name !== 'viewBox' && 
+              attr.name !== 'width' && 
+              attr.name !== 'height' && 
+              attr.name !== 'xmlns' && 
+              attr.name !== 'xmlns:xlink' && 
+              attr.name !== 'style' && 
+              attr.name !== 'class') {
+            clonedSvg.setAttribute(attr.name, attr.value);
+          }
+        });
+      };
+      
+      // Apply all original attributes
+      preserveAllAttributes();
+      
+      // Ensure we have the full bounding box of all content
+      const bbox = clonedSvg.getBBox();
+      
+      // Create a more generous viewBox with extra padding to ensure all content is visible
+      const padding = Math.max(bbox.width, bbox.height) * 0.25; // 25% padding
+      const fullWidth = bbox.width + (padding * 2);
+      const fullHeight = bbox.height + (padding * 2);
+      const generatedViewBox = `${bbox.x - padding} ${bbox.y - padding} ${fullWidth} ${fullHeight}`;
+      
+      // IMPORTANT: Explicitly set viewBox - prioritize original but ensure it's adequate
       if (originalViewBox) {
+        // If original viewbox exists, use it
         clonedSvg.setAttribute('viewBox', originalViewBox);
-      } else if (originalSvgData.viewBox) {
-        clonedSvg.setAttribute('viewBox', originalSvgData.viewBox);
       } else {
-        clonedSvg.setAttribute('viewBox', viewBoxValue);
+        // Otherwise use our calculated viewbox with generous padding
+        clonedSvg.setAttribute('viewBox', generatedViewBox);
       }
 
-      // Set width and height to maintain aspect ratio
+      // IMPORTANT: Always set explicit width and height for proper rendering
       if (originalWidth && originalHeight) {
         clonedSvg.setAttribute('width', originalWidth);
         clonedSvg.setAttribute('height', originalHeight);
-      } else if (originalSvgData.width && originalSvgData.height) {
-        clonedSvg.setAttribute('width', originalSvgData.width);
-        clonedSvg.setAttribute('height', originalSvgData.height);
       } else {
-        // If no original dimensions, use the content dimensions with extra padding to prevent cropping
+        // Set width and height to match the aspect ratio of the bounding box
         clonedSvg.setAttribute('width', String(fullWidth));
         clonedSvg.setAttribute('height', String(fullHeight));
-        // Also set preserveAspectRatio to ensure proper scaling
-        clonedSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
       }
+      
+      // IMPORTANT: Always set preserveAspectRatio to ensure the entire SVG is visible
+      clonedSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
       // Ensure SVG namespace
       if (!clonedSvg.hasAttribute('xmlns')) {
