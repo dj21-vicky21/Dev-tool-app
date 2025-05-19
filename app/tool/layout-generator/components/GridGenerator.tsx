@@ -143,7 +143,7 @@ export default function GridGenerator({ copyToClipboard, copied }: GridGenerator
       items.push(
         <div 
           key={i}
-          className="p-4 rounded text-center font-medium"
+          className="p-4 rounded text-center font-medium text-black"
           style={{ backgroundColor: cellColor }}
         >
           Item {i+1}
