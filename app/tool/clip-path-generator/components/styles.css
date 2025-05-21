@@ -137,18 +137,48 @@
   transform: translate(-50%, -50%) rotate(45deg);
 }
 
-/* Guide intersection points */
-.guide-intersection {
+/* Style for all guide intersection points - unified appearance */
+.guide-intersection,
+.circle-circle-intersection,
+.circle-line-intersection {
   position: absolute;
-  width: 6px;
-  height: 6px;
-  background-color: rgba(59, 130, 246, 0.7);
+  width: 8px;
+  height: 8px;
+  background-color: rgba(56, 189, 248, 0.7); /* Bright teal/blue instead of yellow */
+  border: 1.5px solid white;
   border-radius: 50%;
-  position: absolute;
   transform: translate(-50%, -50%);
-  z-index: 25;
-  border: 1px solid white;
-  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 28;
+  box-shadow: 0 0 5px rgba(56, 189, 248, 0.5);
+}
+
+/* Style for snapped intersections - unified appearance */
+.guide-intersection-snapped,
+.circle-circle-intersection.guide-intersection-snapped,
+.circle-line-intersection.guide-intersection-snapped {
+  width: 9px;
+  height: 9px;
+  background-color: rgba(6, 182, 212, 0.8); /* Slightly darker teal when snapped */
+  box-shadow: 0 0 6px rgba(6, 182, 212, 0.6);
+  z-index: 30;
+  animation: pulse-intersection 2s infinite ease-in-out;
+}
+
+/* Animation for snapped intersection points */
+@keyframes pulse-intersection {
+  0% {
+    transform: translate(-50%, -50%) scale(0.95);
+    box-shadow: 0 0 5px rgba(6, 182, 212, 0.5);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow: 0 0 8px rgba(6, 182, 212, 0.8);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.95);
+    box-shadow: 0 0 5px rgba(6, 182, 212, 0.5);
+  }
 }
 
 /* Add styles for snapped guides */
@@ -157,22 +187,24 @@
 }
 
 .guide-horizontal.guide-snapped {
-  background-color: rgba(239, 71, 170, 0.9);
-  box-shadow: 0 0 7px rgba(239, 71, 170, 0.8);
-  z-index: 17;
+  background-color: rgba(239, 71, 170, 0.4);
+  box-shadow: 0 0 3px rgba(239, 71, 170, 0.3);
+  z-index: 19;
+  height: 1px;
 }
 
 .guide-vertical.guide-snapped {
-  background-color: rgba(239, 71, 170, 0.9);
-  box-shadow: 0 0 7px rgba(239, 71, 170, 0.8);
-  z-index: 17;
+  background-color: rgba(239, 71, 170, 0.4);
+  box-shadow: 0 0 3px rgba(239, 71, 170, 0.3);
+  z-index: 19;
+  width: 1px;
 }
 
 .guide-circular.guide-snapped {
-  border-color: rgba(239, 71, 170, 0.9);
-  border-width: 2px;
-  box-shadow: 0 0 7px rgba(239, 71, 170, 0.7);
-  z-index: 17;
+  border-color: rgba(239, 71, 170, 0.4);
+  border-width: 1px;
+  box-shadow: 0 0 3px rgba(239, 71, 170, 0.3);
+  z-index: 18;
 }
 
 .angle-guide.guide-snapped {
@@ -294,10 +326,12 @@
 
 /* Highlighted intersection point when both guides are snapped */
 .guide-intersection-snapped {
-  background-color: rgb(236, 72, 153);
-  box-shadow: 0 0 6px rgba(236, 72, 153, 0.7);
-  width: 6px;
-  height: 6px;
+  background-color: rgba(239, 71, 170, 0.5);
+  width: 7px;
+  height: 7px;
+  border: 1px solid white;
+  box-shadow: 0 0 4px rgba(239, 71, 170, 0.4);
+  z-index: 26;
 }
 
 /* Special style for diagonal intersection points - make them even more prominent */
@@ -307,58 +341,106 @@
 
 /* Highlighted intersection points for circle and line intersections */
 .guide-intersection-circle {
-  background-color: rgba(239, 71, 111, 0.7);
-  z-index: 26;
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: rgba(99, 102, 241, 0.7);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 20;
+  border: 1px solid white;
+  box-shadow: 0 0 4px rgba(99, 102, 241, 0.6);
 }
 
 .guide-intersection-circle.guide-intersection-snapped {
-  background-color: rgb(236, 72, 153);
-  box-shadow: 0 0 6px rgba(236, 72, 153, 0.7);
-  width: 6px;
-  height: 6px;
+  background-color: rgba(239, 71, 170, 0.5);
+  width: 7px;
+  height: 7px;
+  border: 1px solid white;
+  box-shadow: 0 0 4px rgba(239, 71, 170, 0.4);
+  z-index: 26;
 }
 
-/* Make snapped guides more subtle */
-.guide-horizontal.guide-snapped {
-  background-color: rgba(239, 71, 170, 0.8);
-  box-shadow: 0 0 5px rgba(239, 71, 170, 0.7);
-  z-index: 19;
-  height: 1px; /* Make line normal thickness */
+/* Style for point-to-point snapping indicator */
+.polygon-point-snap-indicator {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 69, 0, 0.8); /* Bright orange for visibility */
+  background-color: rgba(255, 69, 0, 0.1);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 15;
+  animation: pulse-point-snap 1.5s infinite ease-in-out;
 }
 
-.guide-vertical.guide-snapped {
-  background-color: rgba(239, 71, 170, 0.8);
-  box-shadow: 0 0 5px rgba(239, 71, 170, 0.7);
-  z-index: 19;
-  width: 1px; /* Make line normal thickness */
+/* Pulse animation for point snap indicator */
+@keyframes pulse-point-snap {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.4;
+  }
 }
 
-/* Make circle guide more subtle when snapped */
-.guide-circular.guide-snapped {
-  border-color: rgba(239, 71, 170, 0.8);
-  border-width: 2px;
-  box-shadow: 0 0 5px rgba(239, 71, 170, 0.7);
+/* Enhance the visibility of points during dragging to make them more noticeable */
+.point-snap-highlight {
+  box-shadow: 0 0 0 4px rgba(255, 69, 0, 0.5), 0 0 12px 5px rgba(255, 69, 0, 0.3);
+  z-index: 35;
+  transform: translate(-50%, -50%) scale(1.2);
+}
+
+/* Make guide lines for angles more visible */
+.guide-line.guide-angle {
+  position: absolute;
+  transform-origin: center;
+  height: 1px;
+  background-color: rgba(99, 102, 241, 0.5); /* Subtle indigo */
+  width: 200%; /* Make it extend far past the container */
+  left: -50%; /* Offset to center it */
+  transform: rotate(var(--angle-deg, 45deg));
+  pointer-events: none;
+  z-index: 14;
+}
+
+.guide-line.guide-angle.guide-snapped {
+  background-color: rgba(239, 71, 170, 0.9); /* Pink like other snapped guides */
+  box-shadow: 0 0 7px rgba(239, 71, 170, 0.8);
   z-index: 18;
 }
 
-/* Special styles for circle-to-circle intersections */
-.circle-circle-intersection {
-  background-color: rgba(139, 92, 246, 0.7);
-  width: 6px;
-  height: 6px;
-  box-shadow: 0 0 4px rgba(139, 92, 246, 0.5);
-  border-radius: 50%;
+/* Reduce the visual strength of the original position indicator */
+.original-position-indicator {
   position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: rgba(255, 192, 0, 0.4); /* More transparent yellow */
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
-  z-index: 26;
-  border: 1px solid white;
-  transition: box-shadow 0.2s ease;
+  z-index: 20;
+  box-shadow: 0 0 3px rgba(255, 192, 0, 0.3); /* Reduced glow */
 }
 
-.circle-circle-intersection.guide-intersection-snapped {
-  background-color: rgb(236, 72, 153);
-  box-shadow: 0 0 6px rgba(236, 72, 153, 0.7);
-  width: 6px;
-  height: 6px;
+/* Reduce the highlight area size and strength */
+.original-position-area {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background-color: rgba(255, 192, 0, 0.1); /* Much more transparent */
+  border: 1px dashed rgba(255, 192, 0, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 15;
 } 
