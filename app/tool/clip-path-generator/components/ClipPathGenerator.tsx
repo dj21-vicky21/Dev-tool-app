@@ -1762,7 +1762,7 @@ export default function ClipPathGenerator() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 clip-path-generator">
       {/* Controls */}
       <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full md:w-2/3 md:max-w-xl lg:max-w-3xl">

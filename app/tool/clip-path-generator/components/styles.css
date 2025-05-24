@@ -1,4 +1,9 @@
-.bg-grid-pattern {
+/* Clip Path Generator Tool Styles */
+.clip-path-generator {
+  /* Tool-specific container styles */
+}
+
+.clip-path-generator .bg-grid-pattern {
   background-color: #ffffff; /* Change to white background */
   background-image: none; /* Remove the grid pattern */
   overflow: visible; /* Allow guides to extend outside the container */
@@ -6,7 +11,7 @@
 }
 
 /* Grid snap points styling */
-.grid-snap-point {
+.clip-path-generator .grid-snap-point {
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -17,7 +22,7 @@
   z-index: 1;
 }
 
-.draggable-point {
+.clip-path-generator .draggable-point {
   width: 18px;
   height: 18px;
   border-radius: 50%;
@@ -35,38 +40,38 @@
   will-change: transform, left, top;
 }
 
-.draggable-point:hover {
+.clip-path-generator .draggable-point:hover {
   transform: translate(-50%, -50%) scale(1.2);
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9), 0 0 6px 2px rgba(239, 71, 170, 0.5);
   z-index: 40;
 }
 
-.draggable-point:active {
+.clip-path-generator .draggable-point:active {
   cursor: grabbing;
   background-color: rgba(249, 115, 22, 0.9); /* orange-500 for active state */
   transform: translate(-50%, -50%) scale(1.3);
   box-shadow: 0 0 0 2px white, 0 0 8px 3px rgba(249, 115, 22, 0.6);
 }
 
-.snap-line {
+.clip-path-generator .snap-line {
   position: absolute;
   pointer-events: none;
   transition: opacity 0.2s ease-in-out;
 }
 
-.snap-line-horizontal {
+.clip-path-generator .snap-line-horizontal {
   width: 100%;
   height: 1px;
   background-color: rgba(59, 130, 246, 0.5); /* blue-500 with opacity */
 }
 
-.snap-line-vertical {
+.clip-path-generator .snap-line-vertical {
   height: 100%;
   width: 1px;
   background-color: rgba(59, 130, 246, 0.5); /* blue-500 with opacity */
 }
 
-.snap-line-circular {
+.clip-path-generator .snap-line-circular {
   border: 1px dashed rgba(59, 130, 246, 0.5);
   border-radius: 50%;
   position: absolute;
@@ -75,7 +80,7 @@
 
 /* Add styles for the advanced guides system */
 /* Horizontal and vertical guides */
-.guide-line {
+.clip-path-generator .guide-line {
   position: absolute;
   pointer-events: none;
   z-index: 15;
@@ -83,7 +88,7 @@
   overflow: visible;
 }
 
-.guide-horizontal {
+.clip-path-generator .guide-horizontal {
   width: 100%;
   height: 1px;
   background-color: rgba(99, 102, 241, 0.4); /* Indigo color with opacity */
@@ -92,7 +97,7 @@
   right: 0;
 }
 
-.guide-vertical {
+.clip-path-generator .guide-vertical {
   height: 100%;
   width: 1px;
   background-color: rgba(99, 102, 241, 0.4); /* Indigo color with opacity */
@@ -101,7 +106,7 @@
   bottom: 0;
 }
 
-.guide-circular {
+.clip-path-generator .guide-circular {
   border: 1px solid rgba(99, 102, 241, 0.3); /* Indigo color with opacity */
   border-radius: 50%;
   position: absolute;
@@ -113,7 +118,7 @@
 }
 
 /* Guide point indicators */
-.guide-point {
+.clip-path-generator .guide-point {
   position: absolute;
   width: 5px;
   height: 5px;
@@ -127,7 +132,7 @@
 }
 
 /* Angle indicators for 45-degree guides */
-.angle-indicator {
+.clip-path-generator .angle-indicator {
   position: absolute;
   width: 24px;
   height: 24px;
@@ -138,9 +143,9 @@
 }
 
 /* Style for all guide intersection points - unified appearance */
-.guide-intersection,
-.circle-circle-intersection,
-.circle-line-intersection {
+.clip-path-generator .guide-intersection,
+.clip-path-generator .circle-circle-intersection,
+.clip-path-generator .circle-line-intersection {
   position: absolute;
   width: 10px;
   height: 10px;
@@ -154,9 +159,9 @@
 }
 
 /* Style for snapped intersections - unified appearance */
-.guide-intersection-snapped,
-.circle-circle-intersection.guide-intersection-snapped,
-.circle-line-intersection.guide-intersection-snapped {
+.clip-path-generator .guide-intersection-snapped,
+.clip-path-generator .circle-circle-intersection.guide-intersection-snapped,
+.clip-path-generator .circle-line-intersection.guide-intersection-snapped {
   width: 12px;
   height: 12px;
   background-color: rgba(6, 182, 212, 0.9); /* Slightly darker teal when snapped */
@@ -165,50 +170,50 @@
 }
 
 /* Remove pulse animation for intersection points */
-@keyframes pulse-intersection {
+@keyframes clip-path-generator-pulse-intersection {
   /* Empty to disable animation */
 }
 
 /* Add styles for snapped guides */
-.guide-snapped {
-  animation: guide-pulse 1.5s infinite;
+.clip-path-generator .guide-snapped {
+  animation: clip-path-generator-guide-pulse 1.5s infinite;
 }
 
-.guide-horizontal.guide-snapped {
+.clip-path-generator .guide-horizontal.guide-snapped {
   background-color: rgba(239, 71, 170, 0.4);
   box-shadow: 0 0 3px rgba(239, 71, 170, 0.3);
   z-index: 19;
   height: 1px;
 }
 
-.guide-vertical.guide-snapped {
+.clip-path-generator .guide-vertical.guide-snapped {
   background-color: rgba(239, 71, 170, 0.4);
   box-shadow: 0 0 3px rgba(239, 71, 170, 0.3);
   z-index: 19;
   width: 1px;
 }
 
-.guide-circular.guide-snapped {
+.clip-path-generator .guide-circular.guide-snapped {
   border-color: rgba(239, 71, 170, 0.4);
   border-width: 1px;
   box-shadow: 0 0 3px rgba(239, 71, 170, 0.3);
   z-index: 18;
 }
 
-.angle-guide.guide-snapped {
+.clip-path-generator .angle-guide.guide-snapped {
   border-top: 2px solid rgba(239, 71, 170, 0.9);
   box-shadow: 0 0 5px rgba(239, 71, 170, 0.7);
   z-index: 16;
 }
 
-@keyframes guide-pulse {
+@keyframes clip-path-generator-guide-pulse {
   0% { opacity: 0.7; }
   50% { opacity: 1; }
   100% { opacity: 0.7; }
 }
 
 /* Update container to ensure guides stay within boundaries */
-.guide-intersections {
+.clip-path-generator .guide-intersections {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -219,7 +224,7 @@
 }
 
 /* Make all guides more visible */
-.guide-point {
+.clip-path-generator .guide-point {
   position: absolute;
   width: 6px;
   height: 6px;
@@ -232,7 +237,7 @@
 }
 
 /* Add container for all guides */
-.guides-container {
+.clip-path-generator .guides-container {
   position: absolute;
   top: 0;
   left: 0;
@@ -244,7 +249,7 @@
 }
 
 /* Enhance points on guides that are being snapped to */
-.guide-snapped .guide-point {
+.clip-path-generator .guide-snapped .guide-point {
   background-color: rgba(239, 71, 170, 1);
   box-shadow: 0 0 5px rgba(239, 71, 170, 0.9);
   width: 7px;
@@ -253,7 +258,7 @@
 }
 
 /* Add a style for the main center point of circles */
-.guide-circle-center {
+.clip-path-generator .guide-circle-center {
   position: absolute;
   width: 3px;
   height: 3px;
@@ -265,26 +270,26 @@
 }
 
 /* Add styles for angle guides */
-.angle-guide {
+.clip-path-generator .angle-guide {
   display: none; /* Hide them completely instead of removing */
 }
 
-.angle-guide.angle-45,
-.angle-guide.angle-135,
-.angle-guide.angle-225,
-.angle-guide.angle-315,
-.angle-guide.guide-snapped,
-.diagonal-intersection {
+.clip-path-generator .angle-guide.angle-45,
+.clip-path-generator .angle-guide.angle-135,
+.clip-path-generator .angle-guide.angle-225,
+.clip-path-generator .angle-guide.angle-315,
+.clip-path-generator .angle-guide.guide-snapped,
+.clip-path-generator .diagonal-intersection {
   display: none; /* Hide all these elements */
 }
 
 /* Remove animations for diagonal elements */
-@keyframes diagonal-pulse {
+@keyframes clip-path-generator-diagonal-pulse {
   0%, 50%, 100% { transform: translate(-50%, -50%) scale(0); }
 }
 
 /* Fix for small screens to ensure guides extend properly */
-.canvas-container {
+.clip-path-generator .canvas-container {
   position: relative;
   overflow: hidden;
   z-index: 1;
@@ -294,18 +299,18 @@
   box-sizing: border-box;
 }
 
-.canvas-container > * {
+.clip-path-generator .canvas-container > * {
   overflow: visible;
 }
 
-.canvas-container .bg-grid-pattern {
+.clip-path-generator .canvas-container .bg-grid-pattern {
   position: absolute;
   inset: 0;
   overflow: visible;
   z-index: 1;
 }
 
-.canvas-container .guides-container {
+.clip-path-generator .canvas-container .guides-container {
   z-index: 14;
   position: absolute;
   top: 0;
@@ -317,7 +322,7 @@
 }
 
 /* Highlighted intersection point when both guides are snapped */
-.guide-intersection-snapped {
+.clip-path-generator .guide-intersection-snapped {
   background-color: rgba(239, 71, 170, 0.5);
   width: 7px;
   height: 7px;
@@ -327,12 +332,12 @@
 }
 
 /* Special style for diagonal intersection points - make them even more prominent */
-.diagonal-intersection {
+.clip-path-generator .diagonal-intersection {
   display: none; /* Hide these completely */
 }
 
 /* Highlighted intersection points for circle and line intersections */
-.guide-intersection-circle {
+.clip-path-generator .guide-intersection-circle {
   position: absolute;
   width: 8px;
   height: 8px;
@@ -345,7 +350,7 @@
   box-shadow: 0 0 4px rgba(99, 102, 241, 0.6);
 }
 
-.guide-intersection-circle.guide-intersection-snapped {
+.clip-path-generator .guide-intersection-circle.guide-intersection-snapped {
   background-color: rgba(239, 71, 170, 0.5);
   width: 7px;
   height: 7px;
@@ -355,7 +360,7 @@
 }
 
 /* Style for point-to-point snapping indicator */
-.polygon-point-snap-indicator {
+.clip-path-generator .polygon-point-snap-indicator {
   position: absolute;
   width: 24px;
   height: 24px;
@@ -368,19 +373,19 @@
 }
 
 /* Disable pulse animation for point snap indicator */
-@keyframes pulse-point-snap {
+@keyframes clip-path-generator-pulse-point-snap {
   /* Empty to disable animation */
 }
 
 /* Enhance the visibility of points during dragging to make them more noticeable */
-.point-snap-highlight {
+.clip-path-generator .point-snap-highlight {
   box-shadow: 0 0 0 4px rgba(255, 69, 0, 0.5), 0 0 12px 5px rgba(255, 69, 0, 0.3);
   z-index: 35;
   transform: translate(-50%, -50%) scale(1.2);
 }
 
 /* Make guide lines for angles more visible */
-.guide-line.guide-angle {
+.clip-path-generator .guide-line.guide-angle {
   position: absolute;
   transform-origin: center;
   height: 1px;
@@ -392,14 +397,14 @@
   z-index: 14;
 }
 
-.guide-line.guide-angle.guide-snapped {
+.clip-path-generator .guide-line.guide-angle.guide-snapped {
   background-color: rgba(239, 71, 170, 0.9); /* Pink like other snapped guides */
   box-shadow: 0 0 7px rgba(239, 71, 170, 0.8);
   z-index: 18;
 }
 
 /* Reduce the visual strength of the original position indicator */
-.original-position-indicator {
+.clip-path-generator .original-position-indicator {
   position: absolute;
   width: 8px;
   height: 8px;
@@ -413,7 +418,7 @@
 }
 
 /* Reduce the highlight area size and strength */
-.original-position-area {
+.clip-path-generator .original-position-area {
   position: absolute;
   transform: translate(-50%, -50%);
   border-radius: 50%;
@@ -425,6 +430,6 @@
 }
 
 /* Disable pulse animation for original position */
-@keyframes pulse-original-position {
+@keyframes clip-path-generator-pulse-original-position {
   /* Empty to disable animation */
 } 
