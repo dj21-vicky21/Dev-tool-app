@@ -1527,12 +1527,51 @@ export default function ClipPathGenerator() {
 
   // Add function to handle manual clip path updates
   const handleManualClipPathChange = (value: string) => {
-    setIsManuallyEditing(true);
     setManualClipPath(value);
-    setClipPathCSS(value);
     
-    // Try to parse the clip-path value to update the shape
-    tryParseClipPath(value);
+    // Basic validation before applying
+    if (!value.trim()) {
+      // If empty, do nothing and keep current shape
+      return;
+    }
+    
+    // Check for common invalid inputs (like trailing semicolons)
+    let cleanValue = value.trim();
+    if (cleanValue.endsWith(';')) {
+      cleanValue = cleanValue.slice(0, -1).trim();
+    }
+    
+    // Only set as clip path CSS if it appears to be valid
+    if (isValidClipPath(cleanValue)) {
+      setIsManuallyEditing(true);
+      setClipPathCSS(cleanValue);
+      
+      // Try to parse the clip-path value to update the shape
+      tryParseClipPath(cleanValue);
+    }
+  };
+  
+  // Function to check if a clip-path value appears valid
+  const isValidClipPath = (value: string): boolean => {
+    // Simple validation - should start with a valid function name and have balanced parentheses
+    const validFunctions = ['polygon', 'circle', 'ellipse', 'inset', 'path'];
+    
+    // First check if it starts with a valid function name
+    const startsWithValidFunction = validFunctions.some(func => 
+      value.startsWith(`${func}(`)
+    );
+    
+    if (!startsWithValidFunction) return false;
+    
+    // Check for balanced parentheses
+    let openParens = 0;
+    for (const char of value) {
+      if (char === '(') openParens++;
+      if (char === ')') openParens--;
+      if (openParens < 0) return false; // More closing than opening parentheses
+    }
+    
+    return openParens === 0; // All parentheses should be balanced
   };
   
   // Function to parse clip-path values and update the shape
@@ -1555,7 +1594,7 @@ export default function ClipPathGenerator() {
         // Split by commas to get individual points
         const pointStrs = pointsStr.split(',').map(p => p.trim()).filter(p => p.length > 0);
         
-        if (pointStrs.length > 0) {
+        if (pointStrs.length >= 3) { // Ensure we have at least 3 points for a valid polygon
           // Parse each point
           const newPoints = pointStrs.map((pointStr, index) => {
             // Extract x and y percentages
@@ -1581,7 +1620,7 @@ export default function ClipPathGenerator() {
           }).filter((p): p is Point => p !== null);
           
           // Only update if we got valid points
-          if (newPoints.length > 0) {
+          if (newPoints.length >= 3) {
             setIsManuallyEditing(false);
             setShape({
               ...shape,
