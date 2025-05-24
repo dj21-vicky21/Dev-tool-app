@@ -79,6 +79,26 @@ export default function ClipPathGenerator() {
   const [manualClipPath, setManualClipPath] = useState<string>('');
   const [isManuallyEditing, setIsManuallyEditing] = useState<boolean>(false);
   
+  // Add state for background image
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
+
+  // Handle file upload for background image
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setBackgroundImage(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Reset background image
+  const resetBackgroundImage = () => {
+    setBackgroundImage(null);
+  };
+  
   // Update CSS output whenever shape changes
   useEffect(() => {
     if (!isManuallyEditing) {
@@ -1752,7 +1772,26 @@ export default function ClipPathGenerator() {
               ref={canvasRef}
               className="absolute inset-0 bg-grid-pattern"
               onMouseDown={handleCanvasMouseDown}
-              style={{cursor: isDragging ? 'grabbing' : (isPointInPolygon(50, 50, shape.points) ? 'move' : 'default')}}>
+              style={{
+                cursor: isDragging ? 'grabbing' : (isPointInPolygon(50, 50, shape.points) ? 'move' : 'default'),
+              }}>
+
+              {/* Background layer with image or background color */}
+              {showClippedArea && (
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    clipPath: clipPathCSS,
+                    backgroundColor: shape.backgroundColor,
+                    backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    opacity: isDragging ? 0.5 : 1, // Reduce opacity when dragging
+                    transition: 'opacity 0.2s ease, background-color 0.3s ease',
+                  }}
+                />
+              )}
 
               {/* Render the snap grid lines */}
               {gridLines.map(line => (
@@ -2119,19 +2158,6 @@ export default function ClipPathGenerator() {
                 </div>
               )}
 
-              {/* Render clipped area */}
-              {showClippedArea && (
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    clipPath: clipPathCSS,
-                    backgroundColor: shape.backgroundColor,
-                    opacity: isDragging ? 0.5 : 1, // Reduce opacity when dragging
-                    transition: 'opacity 0.2s ease, background-color 0.3s ease',
-                  }}
-                />
-              )}
-
               {/* Display draggable points (for polygon) */}
               {shape.type === 'polygon' && shape.points.map(point => (
                 <div
@@ -2323,6 +2349,29 @@ clip-path: ${clipPathCSS};
                     className="h-4 w-4"
                   />
                   <Label htmlFor="advancedGuides">Show Advanced Guides</Label>
+                </div>
+              </div>
+              
+              {/* Background Image Upload */}
+              <div className="mt-4">
+                <Label className="block mb-2">Background Image</Label>
+                <div className="space-y-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="w-full"
+                  />
+                  {backgroundImage && (
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={resetBackgroundImage}
+                      className="w-full"
+                    >
+                      Remove Background Image
+                    </Button>
+                  )}
                 </div>
               </div>
               
