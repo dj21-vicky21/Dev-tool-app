@@ -2083,11 +2083,12 @@ export default function ClipPathGenerator() {
               {/* Render clipped area */}
               {showClippedArea && (
                 <div
-                  className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-500 to-red-500"
+                  className="absolute inset-0"
                   style={{
                     clipPath: clipPathCSS,
+                    backgroundColor: shape.backgroundColor,
                     opacity: isDragging ? 0.5 : 1, // Reduce opacity when dragging
-                    transition: 'opacity 0.2s ease',
+                    transition: 'opacity 0.2s ease, background-color 0.3s ease',
                   }}
                 />
               )}
