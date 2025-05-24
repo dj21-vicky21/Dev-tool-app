@@ -60,10 +60,10 @@ export const createSquare = (): ShapeProperties => {
   return {
     type: 'polygon',
     points: [
-      { id: generateId(), x: 25, y: 25 },
-      { id: generateId(), x: 75, y: 25 },
-      { id: generateId(), x: 75, y: 75 },
-      { id: generateId(), x: 25, y: 75 },
+      { id: generateId(), x: 20, y: 20 },
+      { id: generateId(), x: 80, y: 20 },
+      { id: generateId(), x: 80, y: 80 },
+      { id: generateId(), x: 20, y: 80 },
     ],
     backgroundColor: '#f97316', // orange-500
   };
@@ -74,9 +74,9 @@ export const createTriangle = (): ShapeProperties => {
   return {
     type: 'polygon',
     points: [
-      { id: generateId(), x: 50, y: 0 },   // top
-      { id: generateId(), x: 100, y: 100 }, // bottom right
-      { id: generateId(), x: 0, y: 100 },  // bottom left
+      { id: generateId(), x: 50, y: 10 },   // top
+      { id: generateId(), x: 90, y: 90 }, // bottom right
+      { id: generateId(), x: 10, y: 90 },  // bottom left
     ],
     backgroundColor: '#f97316', // orange-500
   };
@@ -86,7 +86,7 @@ export const createTriangle = (): ShapeProperties => {
 export const createPentagon = (): ShapeProperties => {
   const points = [];
   const sides = 5;
-  const radius = 50;
+  const radius = 40; // Reduced to stay within bounds
   const centerX = 50;
   const centerY = 50;
   
@@ -178,11 +178,123 @@ export function createDefaultShape(): ShapeProperties {
   return {
     type: 'polygon',
     points: [
-      { id: generateId(), x: 25, y: 25 },
-      { id: generateId(), x: 75, y: 25 },
-      { id: generateId(), x: 75, y: 75 },
-      { id: generateId(), x: 25, y: 75 },
+      { id: generateId(), x: 20, y: 20 },
+      { id: generateId(), x: 80, y: 20 },
+      { id: generateId(), x: 80, y: 80 },
+      { id: generateId(), x: 20, y: 80 },
     ],
     backgroundColor: '#ef4444', // Red color
   };
-} 
+}
+
+// Create a star shape
+export const createStar = (): ShapeProperties => {
+  const points = [];
+  const outerRadius = 45; // Reduced from 50 to stay within bounds
+  const innerRadius = 20; // Reduced from 25
+  const spikes = 5;
+  const centerX = 50;
+  const centerY = 50;
+  
+  for (let i = 0; i < spikes * 2; i++) {
+    const radius = i % 2 === 0 ? outerRadius : innerRadius;
+    const angle = ((i * Math.PI) / spikes) - (Math.PI / 2); // Start from top
+    const x = centerX + radius * Math.cos(angle);
+    const y = centerY + radius * Math.sin(angle);
+    points.push({ id: generateId(), x, y });
+  }
+  
+  return {
+    type: 'polygon',
+    points,
+    backgroundColor: '#f97316', // orange-500
+  };
+};
+
+// Create a diamond shape
+export const createDiamond = (): ShapeProperties => {
+  return {
+    type: 'polygon',
+    points: [
+      { id: generateId(), x: 50, y: 10 },  // top
+      { id: generateId(), x: 90, y: 50 }, // right
+      { id: generateId(), x: 50, y: 90 }, // bottom
+      { id: generateId(), x: 10, y: 50 },  // left
+    ],
+    backgroundColor: '#f97316', // orange-500
+  };
+};
+
+// Create a plus shape
+export const createPlus = (): ShapeProperties => {
+  return {
+    type: 'polygon',
+    points: [
+      { id: generateId(), x: 35, y: 10 },     // top left
+      { id: generateId(), x: 65, y: 10 },     // top right
+      { id: generateId(), x: 65, y: 35 }, // upper right inner
+      { id: generateId(), x: 90, y: 35 },   // right top
+      { id: generateId(), x: 90, y: 65 },   // right bottom
+      { id: generateId(), x: 65, y: 65 }, // lower right inner
+      { id: generateId(), x: 65, y: 90 },   // bottom right
+      { id: generateId(), x: 35, y: 90 },   // bottom left
+      { id: generateId(), x: 35, y: 65 }, // lower left inner
+      { id: generateId(), x: 10, y: 65 },     // left bottom
+      { id: generateId(), x: 10, y: 35 },     // left top
+      { id: generateId(), x: 35, y: 35 }, // upper left inner
+    ],
+    backgroundColor: '#f97316', // orange-500
+  };
+};
+
+// Create a right arrow shape
+export const createRightArrow = (): ShapeProperties => {
+  return {
+    type: 'polygon',
+    points: [
+      { id: generateId(), x: 10, y: 35 },    // left top
+      { id: generateId(), x: 65, y: 35 },    // right top before arrow
+      { id: generateId(), x: 65, y: 20 },    // arrow top inner
+      { id: generateId(), x: 90, y: 50 },    // arrow tip
+      { id: generateId(), x: 65, y: 80 },    // arrow bottom inner
+      { id: generateId(), x: 65, y: 65 },    // right bottom before arrow
+      { id: generateId(), x: 10, y: 65 },    // left bottom
+    ],
+    backgroundColor: '#f97316', // orange-500
+  };
+};
+
+// Create a left arrow shape
+export const createLeftArrow = (): ShapeProperties => {
+  return {
+    type: 'polygon',
+    points: [
+      { id: generateId(), x: 90, y: 35 },    // right top
+      { id: generateId(), x: 35, y: 35 },    // left top before arrow
+      { id: generateId(), x: 35, y: 20 },    // arrow top inner
+      { id: generateId(), x: 10, y: 50 },    // arrow tip
+      { id: generateId(), x: 35, y: 80 },    // arrow bottom inner
+      { id: generateId(), x: 35, y: 65 },    // left bottom before arrow
+      { id: generateId(), x: 90, y: 65 },    // right bottom
+    ],
+    backgroundColor: '#f97316', // orange-500
+  };
+};
+
+// Create a cylinder shape
+export const createCylinder = (): ShapeProperties => {
+  return {
+    type: 'polygon',
+    points: [
+      { id: generateId(), x: 30, y: 20 },  // top left
+      { id: generateId(), x: 70, y: 20 },  // top right
+      { id: generateId(), x: 80, y: 30 },  // right top curve
+      { id: generateId(), x: 80, y: 70 },  // right bottom curve
+      { id: generateId(), x: 70, y: 80 },  // bottom right
+      { id: generateId(), x: 30, y: 80 },  // bottom left
+      { id: generateId(), x: 20, y: 70 },  // left bottom curve
+      { id: generateId(), x: 20, y: 30 },  // left top curve
+    ],
+    backgroundColor: '#f97316', // orange-500
+  };
+}; 

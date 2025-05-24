@@ -288,6 +288,10 @@
   position: relative;
   overflow: hidden;
   z-index: 1;
+  height: 500px !important;
+  min-height: 500px !important;
+  max-height: 500px !important;
+  box-sizing: border-box;
 }
 
 .canvas-container > * {

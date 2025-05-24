@@ -1765,9 +1765,9 @@ export default function ClipPathGenerator() {
     <div className="space-y-6">
       {/* Controls */}
       <div className="flex flex-col md:flex-row gap-6">
-        <div className="w-full md:w-2/3">
+        <div className="w-full md:w-2/3 md:max-w-xl lg:max-w-3xl">
           {/* Canvas */}
-          <div className="relative w-full h-[500px] border rounded-md mb-4 canvas-container">
+          <div className="relative w-full h-[500px] border rounded-md mb-4 canvas-container" style={{ height: '500px', minHeight: '500px', maxHeight: '500px' }}>
             <div 
               ref={canvasRef}
               className="absolute inset-0 bg-grid-pattern"
