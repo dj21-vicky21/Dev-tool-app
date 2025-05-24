@@ -14,6 +14,7 @@ import {
   generateId,
 } from './utils';
 import { Card } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import './styles.css';
 import PresetShapes from './PresetShapes';
 
@@ -78,11 +79,18 @@ export default function ClipPathGenerator() {
   // Add state to track the point we're snapping to
   const [snappedPointId, setSnappedPointId] = useState<string | null>(null);
   
+  // Add a new state to track manual edits to the clip path
+  const [manualClipPath, setManualClipPath] = useState<string>('');
+  const [isManuallyEditing, setIsManuallyEditing] = useState<boolean>(false);
+  
   // Update CSS output whenever shape changes
   useEffect(() => {
-    const cssValue = generateClipPath(shape);
-    setClipPathCSS(cssValue);
-  }, [shape]);
+    if (!isManuallyEditing) {
+      const cssValue = generateClipPath(shape);
+      setClipPathCSS(cssValue);
+      setManualClipPath(cssValue);
+    }
+  }, [shape, isManuallyEditing]);
 
   // Set up event listeners for keyboard shortcuts
   useEffect(() => {
@@ -1198,16 +1206,19 @@ export default function ClipPathGenerator() {
 
   // Copy CSS to clipboard
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(`clip-path: ${clipPathCSS};`);
-    toast({
-      title: "Copied to clipboard",
-      description: "CSS clip-path copied to clipboard",
-    });
+    navigator.clipboard.writeText(clipPathCSS)
+      .then(() => {
+        toast({
+          title: "Copied!",
+          description: "Clip path CSS copied to clipboard",
+        });
+      });
   };
 
   // Reset to default shape
   const resetShape = () => {
     setShape(createDefaultShape());
+    setIsManuallyEditing(false);
   };
 
   // Set background color
@@ -1518,6 +1529,79 @@ export default function ClipPathGenerator() {
     }
     
     return result;
+  };
+
+  // Add function to handle manual clip path updates
+  const handleManualClipPathChange = (value: string) => {
+    setIsManuallyEditing(true);
+    setManualClipPath(value);
+    setClipPathCSS(value);
+    
+    // Try to parse the clip-path value to update the shape
+    tryParseClipPath(value);
+  };
+  
+  // Function to parse clip-path values and update the shape
+  const tryParseClipPath = (clipPathValue: string) => {
+    try {
+      // Clean up the input (remove "clip-path:", extra spaces, etc.)
+      let cleaned = clipPathValue.trim();
+      if (cleaned.startsWith('clip-path:')) {
+        cleaned = cleaned.substring('clip-path:'.length).trim();
+      }
+      if (cleaned.endsWith(';')) {
+        cleaned = cleaned.substring(0, cleaned.length - 1).trim();
+      }
+      
+      // Check if it's a polygon
+      if (cleaned.startsWith('polygon(') && cleaned.endsWith(')')) {
+        // Extract the points part
+        const pointsStr = cleaned.substring('polygon('.length, cleaned.length - 1).trim();
+        
+        // Split by commas to get individual points
+        const pointStrs = pointsStr.split(',').map(p => p.trim()).filter(p => p.length > 0);
+        
+        if (pointStrs.length > 0) {
+          // Parse each point
+          const newPoints = pointStrs.map((pointStr, index) => {
+            // Extract x and y percentages
+            const parts = pointStr.split(' ');
+            if (parts.length >= 2) {
+              // Parse the values, removing % if present
+              const xStr = parts[0].endsWith('%') ? parts[0].slice(0, -1) : parts[0];
+              const yStr = parts[1].endsWith('%') ? parts[1].slice(0, -1) : parts[1];
+              
+              const x = parseFloat(xStr);
+              const y = parseFloat(yStr);
+              
+              // Validate if these are numbers
+              if (!isNaN(x) && !isNaN(y)) {
+                return {
+                  id: shape.points[index]?.id || generateId(),
+                  x: x,
+                  y: y
+                };
+              }
+            }
+            return null;
+          }).filter((p): p is Point => p !== null);
+          
+          // Only update if we got valid points
+          if (newPoints.length > 0) {
+            setIsManuallyEditing(false);
+            setShape({
+              ...shape,
+              type: 'polygon',
+              points: newPoints
+            });
+          }
+        }
+      }
+      // Add support for other clip-path shapes like circle, ellipse, etc. if needed
+    } catch (error) {
+      console.error('Error parsing clip path:', error);
+      // Don't update the shape if parsing fails
+    }
   };
 
   return (
@@ -1954,6 +2038,19 @@ export default function ClipPathGenerator() {
                 </Button>
               </div>
             </div>
+            
+            {/* Editable clip-path field */}
+            <div className="mb-3">
+              <Label htmlFor="clip-path-input" className="text-xs text-muted-foreground mb-1 block">Edit or paste clip-path value:</Label>
+              <Textarea 
+                id="clip-path-input"
+                value={manualClipPath}
+                onChange={(e) => handleManualClipPathChange(e.target.value)}
+                className="font-mono text-sm h-20"
+                placeholder="e.g. polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)"
+              />
+            </div>
+            
             <pre className="p-3 bg-background rounded border text-sm overflow-x-auto">
               {`/* CSS Clip Path */
 clip-path: ${clipPathCSS};
@@ -2048,6 +2145,7 @@ clip-path: ${clipPathCSS};
                   <li>Click and drag inside the shape to move the entire shape</li>
                   <li>Hold Shift while dragging to temporarily disable grid snapping</li>
                   <li>Hover over a point to reveal the delete button</li>
+                  <li>Paste a clip-path value to import an existing shape</li>
                 </ul>
               </div>
             </div>
