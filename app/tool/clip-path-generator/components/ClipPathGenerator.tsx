@@ -212,8 +212,8 @@ export default function ClipPathGenerator() {
             // Create arrays to store all snapped guides
             const snappedHorizontalGuides: number[] = [];
             const snappedVerticalGuides: number[] = [];
-            const snappedCircleGuides: typeof activeGuides.circles = [];
-            const snappedAngleGuides: typeof activeGuides.angles = [];
+            const snappedCircleGuides: Array<typeof activeGuides.circles[0]> = [];
+            const snappedAngleGuides: typeof activeGuides.angles[0][] = [];
             
             // First check for snapping to existing polygon points
             // This takes highest priority over all other snapping
@@ -279,7 +279,7 @@ export default function ClipPathGenerator() {
             if (originalPos) {
               const distToOriginal = Math.hypot(newX - originalPos.x, newY - originalPos.y);
               
-              // If we're close to the original position (within 2 units instead of 5), snap to it exactly
+              // If we're close to the original position (within SNAP_STRENGTH units), snap to it exactly
               if (distToOriginal < SNAP_STRENGTH) {
                 newX = originalPos.x;
                 newY = originalPos.y;
@@ -344,45 +344,39 @@ export default function ClipPathGenerator() {
             // First check for intersection points of guides - they have highest priority
             let snappedToIntersection = false;
             
-            // 1. First check intersections between horizontal and vertical lines - highest priority
+            // Collect all intersection points first before deciding which one to snap to
+            const nearbyIntersections: Array<{
+              x: number;
+              y: number;
+              guides: {
+                horizontal?: number;
+                vertical?: number;
+                circles?: typeof activeGuides.circles[0];
+                angles?: typeof activeGuides.angles[0][];
+              };
+            }> = [];
+            
+            // 1. Check horizontal and vertical line intersections
             for (const hLine of activeGuides.horizontal) {
               for (const vLine of activeGuides.vertical) {
                 // Calculate distance from mouse to intersection point
                 const dist = Math.hypot(newX - vLine, newY - hLine);
                 
-                if (dist < SNAP_STRENGTH) { // Consistent threshold using global constant
-                  // Snap exactly to the intersection
-                  newX = vLine;
-                  newY = hLine;
-                  
-                  // Add these lines to snapped guides
-                  snappedHorizontalGuides.push(hLine);
-                  snappedVerticalGuides.push(vLine);
-                  
-                  // Add to visible grid lines for visual feedback with stronger appearance
-                  newVisibleLines.push({
-                    id: generateId(),
-                    type: 'horizontal',
-                    position: hLine,
-                    opacity: 1.0
+                if (dist < SNAP_STRENGTH * 1.5) { // Use slightly larger detection radius to collect candidates
+                  nearbyIntersections.push({
+                    x: vLine,
+                    y: hLine,
+                    guides: {
+                      horizontal: hLine,
+                      vertical: vLine
+                    }
                   });
-                  
-                  newVisibleLines.push({
-                    id: generateId(),
-                    type: 'vertical',
-                    position: vLine,
-                    opacity: 1.0
-                  });
-                  
-                  snappedToIntersection = true;
-                  break;
                 }
               }
-              if (snappedToIntersection) break;
             }
             
-            // 2. If not snapped to horizontal/vertical intersection, check intersections with angle lines
-            if (!snappedToIntersection && activeGuides.angles && activeGuides.angles.length > 0) {
+            // 2. Add angle guide intersections to the collection
+            if (activeGuides.angles && activeGuides.angles.length > 0) {
               for (let i = 0; i < activeGuides.angles.length; i++) {
                 const angle1 = activeGuides.angles[i];
                 
@@ -544,88 +538,114 @@ export default function ClipPathGenerator() {
             if (!snappedToIntersection) {
               // Check for circle and line intersections first
               if (showAdvancedGuides && activeGuides.circles.length > 0) {
-                let circleIntersectionFound = false;
                 
-                // Check circle intersections with horizontal lines
+                // Check circle intersections with horizontal lines - FIX SNAPPING TO NEAREST POINT
+                const allNearbyIntersections: Array<{
+                  x: number;
+                  y: number;
+                  distance: number;
+                  type: string;
+                  guides: {
+                    horizontal?: number;
+                    vertical?: number;
+                    circle?: typeof activeGuides.circles[0];
+                    circles?: typeof activeGuides.circles[0][]; // Fix type to be array of circles
+                  };
+                }> = [];
+
+                // Collect ALL possible intersection points first (horizontal, vertical, and circles)
+                // Check all circle-horizontal intersections
                 for (const circle of activeGuides.circles) {
                   for (const hLine of activeGuides.horizontal) {
                     // Only check if horizontal line is near the circle
                     if (Math.abs(hLine - circle.cy) <= circle.r) {
-                      // Calculate x positions where circle intersects with horizontal line
                       const yDiff = Math.abs(hLine - circle.cy);
                       const xDist = Math.sqrt(circle.r * circle.r - yDiff * yDiff);
                       
-                      // Check left intersection point
+                      // Calculate both intersection points
                       const leftX = circle.cx - xDist;
-                      const leftDist = Math.hypot(newX - leftX, newY - hLine);
-                      
-                      // Check right intersection point
                       const rightX = circle.cx + xDist;
+                      
+                      // Calculate distances to both points
+                      const leftDist = Math.hypot(newX - leftX, newY - hLine);
                       const rightDist = Math.hypot(newX - rightX, newY - hLine);
                       
-                      // If close to either intersection, snap to it
-                      if (leftDist < SNAP_STRENGTH) {
-                        newX = leftX;
-                        newY = hLine;
-                        snappedHorizontalGuides.push(hLine);
-                        snappedCircleGuides.push(circle);
-                        circleIntersectionFound = true;
-                        break;
-                      } else if (rightDist < SNAP_STRENGTH) {
-                        newX = rightX;
-                        newY = hLine;
-                        snappedHorizontalGuides.push(hLine);
-                        snappedCircleGuides.push(circle);
-                        circleIntersectionFound = true;
-                        break;
+                      // Add both intersection points to the collection
+                      if (leftDist < SNAP_STRENGTH * 2) {
+                        allNearbyIntersections.push({
+                          x: leftX,
+                          y: hLine,
+                          distance: leftDist,
+                          type: 'circle-horizontal',
+                          guides: {
+                            horizontal: hLine,
+                            circle: circle
+                          }
+                        });
+                      }
+                      
+                      if (rightDist < SNAP_STRENGTH * 2) {
+                        allNearbyIntersections.push({
+                          x: rightX,
+                          y: hLine,
+                          distance: rightDist,
+                          type: 'circle-horizontal',
+                          guides: {
+                            horizontal: hLine,
+                            circle: circle
+                          }
+                        });
                       }
                     }
                   }
-                  if (circleIntersectionFound) break;
-                }
-                
-                // If no circle-horizontal intersection found, check circle-vertical intersections
-                if (!circleIntersectionFound) {
-                  for (const circle of activeGuides.circles) {
-                    for (const vLine of activeGuides.vertical) {
-                      // Only check if vertical line is near the circle
-                      if (Math.abs(vLine - circle.cx) <= circle.r) {
-                        // Calculate y positions where circle intersects with vertical line
-                        const xDiff = Math.abs(vLine - circle.cx);
-                        const yDist = Math.sqrt(circle.r * circle.r - xDiff * xDiff);
-                        
-                        // Check top intersection point
-                        const topY = circle.cy - yDist;
-                        const topDist = Math.hypot(newX - vLine, newY - topY);
-                        
-                        // Check bottom intersection point
-                        const bottomY = circle.cy + yDist;
-                        const bottomDist = Math.hypot(newX - vLine, newY - bottomY);
-                        
-                        // If close to either intersection, snap to it
-                        if (topDist < SNAP_STRENGTH) {
-                          newX = vLine;
-                          newY = topY;
-                          snappedVerticalGuides.push(vLine);
-                          snappedCircleGuides.push(circle);
-                          circleIntersectionFound = true;
-                          break;
-                        } else if (bottomDist < SNAP_STRENGTH) {
-                          newX = vLine;
-                          newY = bottomY;
-                          snappedVerticalGuides.push(vLine);
-                          snappedCircleGuides.push(circle);
-                          circleIntersectionFound = true;
-                          break;
-                        }
+                  
+                  // Check all circle-vertical intersections
+                  for (const vLine of activeGuides.vertical) {
+                    // Only check if vertical line is near the circle
+                    if (Math.abs(vLine - circle.cx) <= circle.r) {
+                      const xDiff = Math.abs(vLine - circle.cx);
+                      const yDist = Math.sqrt(circle.r * circle.r - xDiff * xDiff);
+                      
+                      // Calculate both intersection points
+                      const topY = circle.cy - yDist;
+                      const bottomY = circle.cy + yDist;
+                      
+                      // Calculate distances to both points
+                      const topDist = Math.hypot(newX - vLine, newY - topY);
+                      const bottomDist = Math.hypot(newX - vLine, newY - bottomY);
+                      
+                      // Add both intersection points to the collection
+                      if (topDist < SNAP_STRENGTH * 2) {
+                        allNearbyIntersections.push({
+                          x: vLine,
+                          y: topY,
+                          distance: topDist,
+                          type: 'circle-vertical',
+                          guides: {
+                            vertical: vLine,
+                            circle: circle
+                          }
+                        });
+                      }
+                      
+                      if (bottomDist < SNAP_STRENGTH * 2) {
+                        allNearbyIntersections.push({
+                          x: vLine,
+                          y: bottomY,
+                          distance: bottomDist,
+                          type: 'circle-vertical',
+                          guides: {
+                            vertical: vLine,
+                            circle: circle
+                          }
+                        });
                       }
                     }
-                    if (circleIntersectionFound) break;
                   }
                 }
-                
-                // If no circle-line intersection found, check for circle-to-circle intersections
-                if (!circleIntersectionFound && activeGuides.circles.length > 1) {
+
+                // Add circle-to-circle intersections to the collection
+                if (activeGuides.circles.length > 1) {
                   for (let i = 0; i < activeGuides.circles.length; i++) {
                     for (let j = i + 1; j < activeGuides.circles.length; j++) {
                       const circle1 = activeGuides.circles[i];
@@ -634,15 +654,9 @@ export default function ClipPathGenerator() {
                       // Calculate distance between circle centers
                       const centerDist = Math.hypot(circle1.cx - circle2.cx, circle1.cy - circle2.cy);
                       
-                      // Check if circles intersect
-                      // For circles to intersect: |r1-r2| < d < r1+r2
-                      // where d is distance between centers, r1 and r2 are radii
+                      // Check if circles intersect: |r1-r2| < d < r1+r2
                       if (Math.abs(circle1.r - circle2.r) < centerDist && centerDist < (circle1.r + circle2.r)) {
-                        // Calculate circle intersection points using circle-circle intersection formula
-                        
-                        // Let's denote the two circles as:
-                        // Circle 1 with center (x0,y0) and radius r0
-                        // Circle 2 with center (x1,y1) and radius r1
+                        // Calculate intersection points
                         const x0 = circle1.cx;
                         const y0 = circle1.cy;
                         const r0 = circle1.r;
@@ -650,23 +664,11 @@ export default function ClipPathGenerator() {
                         const y1 = circle2.cy;
                         const r1 = circle2.r;
                         
-                        // Calculate the two intersection points
-                        // Step 1: Calculate the distance d between the centers
                         const d = centerDist;
-                        
-                        // Step 2: Calculate the distance a from center1 to the line connecting the intersection points
                         const a = (r0*r0 - r1*r1 + d*d) / (2*d);
-                        
-                        // Step 3: Find the point P2 that is 'a' away from center1 on the line between centers
                         const p2x = x0 + a * (x1 - x0) / d;
                         const p2y = y0 + a * (y1 - y0) / d;
-                        
-                        // Step 4: Calculate the distance h from P2 to either intersection point
                         const h = Math.sqrt(r0*r0 - a*a);
-                        
-                        // Step 5: Calculate the intersection points
-                        // P3 = P2 + h * (y1 - y0, x0 - x1) / d
-                        // P4 = P2 - h * (y1 - y0, x0 - x1) / d
                         const xFactor = (y1 - y0) / d;
                         const yFactor = (x0 - x1) / d;
                         
@@ -675,29 +677,91 @@ export default function ClipPathGenerator() {
                         const intersection2X = p2x - h * xFactor;
                         const intersection2Y = p2y - h * yFactor;
                         
-                        // Calculate distance from mouse to both intersection points
+                        // Calculate distances
                         const dist1 = Math.hypot(newX - intersection1X, newY - intersection1Y);
                         const dist2 = Math.hypot(newX - intersection2X, newY - intersection2Y);
                         
-                        // Update horizontal and vertical line intersection snapping
-                        if (dist1 < SNAP_STRENGTH || dist2 < SNAP_STRENGTH) { // Use consistent threshold of 2 for circle intersections
-                          if (dist1 < dist2) {
-                            newX = intersection1X;
-                            newY = intersection1Y;
-                          } else {
-                            newX = intersection2X;
-                            newY = intersection2Y;
-                          }
-                          
-                          // Add both circles to snapped guides
-                          snappedCircleGuides.push(circle1);
-                          snappedCircleGuides.push(circle2);
-                          circleIntersectionFound = true;
-                          break;
+                        // Add both intersections to collection
+                        if (dist1 < SNAP_STRENGTH * 2) {
+                          allNearbyIntersections.push({
+                            x: intersection1X,
+                            y: intersection1Y,
+                            distance: dist1,
+                            type: 'circle-circle',
+                            guides: {
+                              circles: [circle1, circle2]
+                            }
+                          });
+                        }
+                        
+                        if (dist2 < SNAP_STRENGTH * 2) {
+                          allNearbyIntersections.push({
+                            x: intersection2X,
+                            y: intersection2Y,
+                            distance: dist2,
+                            type: 'circle-circle',
+                            guides: {
+                              circles: [circle1, circle2]
+                            }
+                          });
                         }
                       }
                     }
-                    if (circleIntersectionFound) break;
+                  }
+                }
+
+                // Now find the closest intersection point from all collected possibilities
+                if (allNearbyIntersections.length > 0) {
+                  // Sort by distance (ascending)
+                  allNearbyIntersections.sort((a, b) => a.distance - b.distance);
+                  
+                  // Take the closest one
+                  const closestIntersection = allNearbyIntersections[0];
+                  
+                  // Only snap if it's within the actual snap strength threshold
+                  if (closestIntersection.distance <= SNAP_STRENGTH) {
+                    // Snap to this intersection
+                    newX = closestIntersection.x;
+                    newY = closestIntersection.y;
+                    
+                    // Update snapped guides
+                    if (closestIntersection.guides.horizontal !== undefined) {
+                      snappedHorizontalGuides.push(closestIntersection.guides.horizontal);
+                      
+                      // Add to visible guides
+                      newVisibleLines.push({
+                        id: generateId(),
+                        type: 'horizontal',
+                        position: closestIntersection.guides.horizontal,
+                        opacity: 1.0
+                      });
+                    }
+                    
+                    if (closestIntersection.guides.vertical !== undefined) {
+                      snappedVerticalGuides.push(closestIntersection.guides.vertical);
+                      
+                      // Add to visible guides
+                      newVisibleLines.push({
+                        id: generateId(),
+                        type: 'vertical',
+                        position: closestIntersection.guides.vertical,
+                        opacity: 1.0
+                      });
+                    }
+                    
+                    if (closestIntersection.guides.circle) {
+                      snappedCircleGuides.push(closestIntersection.guides.circle);
+                    }
+                    
+                    if (closestIntersection.guides.circles) {
+                      closestIntersection.guides.circles.forEach(circle => {
+                        if (circle) snappedCircleGuides.push(circle);
+                      });
+                    }
+                    
+                    // Set flag to indicate we've snapped to an intersection
+      // We have snapped to an intersection
+                    snappedToIntersection = true;
                   }
                 }
               }
@@ -1721,9 +1785,9 @@ export default function ClipPathGenerator() {
                           // Calculate distance between circle centers
                           const centerDist = Math.hypot(circle1.cx - circle2.cx, circle1.cy - circle2.cy);
                           
-                          // Check if circles intersect
+                          // Check if circles intersect: |r1-r2| < d < r1+r2
                           if (Math.abs(circle1.r - circle2.r) < centerDist && centerDist < (circle1.r + circle2.r)) {
-                            // Calculate intersection points using the existing formulas
+                            // Calculate intersection points
                             const x0 = circle1.cx;
                             const y0 = circle1.cy;
                             const r0 = circle1.r;
@@ -1744,13 +1808,14 @@ export default function ClipPathGenerator() {
                             const intersection2X = p2x - h * xFactor;
                             const intersection2Y = p2y - h * yFactor;
                             
+                            // Simply add both intersection points without distance checks
                             allIntersectionPoints.push({
                               x: intersection1X,
                               y: intersection1Y,
                               isSnapped: isIntersectionSnapped,
                               type: 'circle-circle',
                               hasSnappedGuide,
-                              circle: isCircle1Snapped ? circle1 : circle2  // Add reference to the snapped circle
+                              circle: isCircle1Snapped ? circle1 : circle2
                             });
                             
                             allIntersectionPoints.push({
@@ -1759,7 +1824,7 @@ export default function ClipPathGenerator() {
                               isSnapped: isIntersectionSnapped,
                               type: 'circle-circle',
                               hasSnappedGuide,
-                              circle: isCircle1Snapped ? circle1 : circle2  // Add reference to the snapped circle
+                              circle: isCircle1Snapped ? circle1 : circle2
                             });
                           }
                         }
@@ -1991,4 +2056,4 @@ clip-path: ${clipPathCSS};
       </div>
     </div>
   );
-} 
+}
