@@ -2083,7 +2083,7 @@ export default function ClipPathGenerator() {
               {/* Render clipped area */}
               {showClippedArea && (
                 <div
-                  className="absolute inset-0 bg-gradient-to-br from-blue-500 to-red-500"
+                  className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-500 to-red-500"
                   style={{
                     clipPath: clipPathCSS,
                     opacity: isDragging ? 0.5 : 1, // Reduce opacity when dragging
@@ -2231,18 +2231,12 @@ clip-path: ${clipPathCSS};
                     className="w-8 h-8 border rounded"
                     style={{ backgroundColor: shape.backgroundColor }}
                   />
-                  <Input 
-                    id="background-color"
-                    type="text" 
-                    value={shape.backgroundColor}
-                    onChange={(e) => handleBackgroundColorChange(e.target.value)}
-                    className="flex-1"
-                  />
                   <Input
                     type="color"
+                    id="background-color"
                     value={shape.backgroundColor}
                     onChange={(e) => handleBackgroundColorChange(e.target.value)}
-                    className="w-10 h-10 p-1"
+                    className="w-full h-10"
                   />
                 </div>
               </div>

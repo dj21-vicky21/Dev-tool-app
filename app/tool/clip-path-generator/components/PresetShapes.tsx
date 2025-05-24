@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import {
   createTriangle,
   createSquare,
-  createPentagon,
-  createCircle,
 } from './utils';
 import { ShapeProperties } from './types';
 
@@ -17,12 +15,10 @@ export default function PresetShapes({ onSelectShape }: PresetShapesProps) {
   const presets = [
     { name: 'Triangle', shape: createTriangle(), icon: '△' },
     { name: 'Square', shape: createSquare(), icon: '□' },
-    { name: 'Pentagon', shape: createPentagon(), icon: '⬠' },
-    { name: 'Circle', shape: createCircle(), icon: '○' },
   ];
   
   return (
-    <div className="grid grid-cols-4 gap-2">
+    <div className="grid grid-cols-2 gap-2">
       {presets.map((preset, index) => (
         <Button
           key={index}

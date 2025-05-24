@@ -60,10 +60,10 @@ export const createSquare = (): ShapeProperties => {
   return {
     type: 'polygon',
     points: [
-      { id: generateId(), x: 0, y: 0 },    // top left
-      { id: generateId(), x: 100, y: 0 },   // top right
-      { id: generateId(), x: 100, y: 100 }, // bottom right
-      { id: generateId(), x: 0, y: 100 },  // bottom left
+      { id: generateId(), x: 25, y: 25 },
+      { id: generateId(), x: 75, y: 25 },
+      { id: generateId(), x: 75, y: 75 },
+      { id: generateId(), x: 25, y: 75 },
     ],
     backgroundColor: '#f97316', // orange-500
   };
@@ -183,6 +183,6 @@ export function createDefaultShape(): ShapeProperties {
       { id: generateId(), x: 75, y: 75 },
       { id: generateId(), x: 25, y: 75 },
     ],
-    backgroundColor: '#ef4444', // Change to a more visible red color
+    backgroundColor: '#ef4444', // Red color
   };
 } 
