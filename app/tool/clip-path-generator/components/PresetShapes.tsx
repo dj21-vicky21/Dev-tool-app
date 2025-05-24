@@ -1,5 +1,6 @@
 "use client";
 
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import {
   createTriangle,
@@ -9,27 +10,47 @@ import { ShapeProperties } from './types';
 
 interface PresetShapesProps {
   onSelectShape: (shape: ShapeProperties) => void;
+  currentBackgroundColor?: string;
 }
 
-export default function PresetShapes({ onSelectShape }: PresetShapesProps) {
-  const presets = [
-    { name: 'Triangle', shape: createTriangle(), icon: '△' },
-    { name: 'Square', shape: createSquare(), icon: '□' },
-  ];
-  
+const PresetShapes = ({ onSelectShape, currentBackgroundColor }: PresetShapesProps) => {
+  const handlePresetClick = (type: 'triangle' | 'square') => {
+    let newShape;
+    
+    if (type === 'triangle') {
+      newShape = createTriangle();
+    } else {
+      newShape = createSquare();
+    }
+    
+    if (currentBackgroundColor) {
+      newShape.backgroundColor = currentBackgroundColor;
+    }
+    
+    onSelectShape(newShape);
+  };
+
   return (
     <div className="grid grid-cols-2 gap-2">
-      {presets.map((preset, index) => (
-        <Button
-          key={index}
-          variant="outline"
-          className="h-16 flex flex-col items-center justify-center p-1"
-          onClick={() => onSelectShape(preset.shape)}
-        >
-          <span className="text-xl">{preset.icon}</span>
-          <span className="text-xs mt-1">{preset.name}</span>
-        </Button>
-      ))}
+      <Button
+        variant="outline"
+        className="h-16 flex flex-col items-center justify-center"
+        onClick={() => handlePresetClick('triangle')}
+      >
+        <div className="text-2xl mb-1">△</div>
+        <span className="text-xs">Triangle</span>
+      </Button>
+      
+      <Button
+        variant="outline"
+        className="h-16 flex flex-col items-center justify-center"
+        onClick={() => handlePresetClick('square')}
+      >
+        <div className="text-2xl mb-1">□</div>
+        <span className="text-xs">Square</span>
+      </Button>
     </div>
   );
-} 
+};
+
+export default PresetShapes; 

@@ -2227,7 +2227,10 @@ clip-path: ${clipPathCSS};
               {/* Shape Type Selector */}
               <div>
                 <Label className="block mb-2">Shape Presets</Label>
-                <PresetShapes onSelectShape={setShape} />
+                <PresetShapes 
+                  onSelectShape={setShape} 
+                  currentBackgroundColor={shape.backgroundColor}
+                />
               </div>
               
               {/* Background Color */}
