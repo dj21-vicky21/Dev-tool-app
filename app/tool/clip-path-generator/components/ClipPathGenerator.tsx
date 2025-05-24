@@ -2111,7 +2111,13 @@ export default function ClipPathGenerator() {
                 >
                   {/* Delete button for points - now visible on point hover */}
                   <button 
-                    className="absolute -top-6 -right-6 w-5 h-5 bg-white bg-opacity-80 rounded-full flex items-center justify-center text-red-500 group-hover:opacity-100 opacity-0 transition-opacity"
+                    className="absolute w-5 h-5 bg-white bg-opacity-80 rounded-full flex items-center justify-center text-red-500 group-hover:opacity-100 opacity-0 transition-opacity"
+                    style={{
+                      // Position the delete button inside the canvas when the point is at the edge
+                      top: point.y < 10 ? '0.5rem' : '-1.5rem',
+                      right: point.x > 90 ? '0.5rem' : '-1.5rem',
+                      left: point.x < 10 ? '0.5rem' : 'auto'
+                    }}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
