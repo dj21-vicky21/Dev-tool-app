@@ -39,10 +39,6 @@ export default function ClipPathGenerator() {
   const gridLines = generateGridLines(); // Changed to constant since it's not modified
   const [visibleGridLines, setVisibleGridLines] = useState<GridLine[]>([]);
   const [shiftPressed, setShiftPressed] = useState<boolean>(false);
-  // Track whether mouse moved during drag to distinguish between clicks and drags
-  const [hasMoved, setHasMoved] = useState<boolean>(false);
-  // Timestamp to prevent rapid consecutive point creation
-  const lastClickTimeRef = useRef<number>(0);
   // Add a state to track the currently dragged point ID for styling other points
   const [draggedPointId, setDraggedPointId] = useState<string | null>(null);
   
@@ -206,7 +202,6 @@ export default function ClipPathGenerator() {
           if (!localHasMoved) {
             if (Math.abs(mousePos.x - activePoint.x) > 1 || Math.abs(mousePos.y - activePoint.y) > 1) {
               localHasMoved = true;
-              setHasMoved(true);
             }
           }
           
@@ -768,7 +763,6 @@ export default function ClipPathGenerator() {
                     }
                     
                     // Set flag to indicate we've snapped to an intersection
-      // We have snapped to an intersection
                     snappedToIntersection = true;
                   }
                 }
@@ -1074,7 +1068,6 @@ export default function ClipPathGenerator() {
         // Reset all interaction states
         setIsDragging(false);
         setActivePoint(null);
-        setHasMoved(false);
         setIsMovingShape(false);
         setMoveStartPosition(null);
         
@@ -1123,7 +1116,6 @@ export default function ClipPathGenerator() {
     
     setActivePoint(point);
     setIsDragging(true);
-    setHasMoved(false);
     setDraggedPointId(point.id);
     
     // Store the original position of the point
@@ -1144,24 +1136,74 @@ export default function ClipPathGenerator() {
 
   // Start moving the entire shape
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
-    // Only allow moving if clicking on the clipped area and not on or near points
+    // Only allow actions on polygon shapes
     if (shape.type !== 'polygon') return;
 
     const mousePos = calculatePosition(e);
     
-    // Don't start moving if we're clicking on or near a point
+    // Don't start if we're clicking on or near a point
     if (isNearExistingPoint(mousePos.x, mousePos.y, 10)) {
       return;
     }
     
-    // Only allow moving when clicking inside the polygon
-    if (isPointInPolygon(mousePos.x, mousePos.y, shape.points)) {
+    // Check if we're clicking inside the polygon
+    const isInside = isPointInPolygon(mousePos.x, mousePos.y, shape.points);
+    
+    if (isInside) {
+      // Handle shape movement as before
       e.preventDefault();
       e.stopPropagation();
       setIsMovingShape(true);
       setMoveStartPosition(mousePos);
       if (canvasRef.current) {
         canvasRef.current.style.cursor = 'move';
+      }
+    } else {
+      // Check if we're on the edge of the polygon
+      const edgeInfo = isPointOnPolygonEdge(mousePos.x, mousePos.y, shape.points);
+      
+      if (edgeInfo.isOnEdge) {
+        // Start adding a new point by dragging
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Create a new point at the edge location
+        const newPointId = generateId();
+        const newPoint: Point = { 
+          id: newPointId, 
+          x: edgeInfo.edgePoint.x, 
+          y: edgeInfo.edgePoint.y 
+        };
+        
+        // Insert the new point between the edge's start and end points
+        const newPoints = [...shape.points];
+        newPoints.splice(edgeInfo.edge.endIndex, 0, newPoint);
+        
+        // Update the shape with the new point
+        setShape({
+          ...shape,
+          points: newPoints
+        });
+        
+        // Set this new point as active for dragging
+        setActivePoint(newPoint);
+        setIsDragging(true);
+        setDraggedPointId(newPointId);
+        
+        // Store the original position of the point
+        setOriginalPointPositions(prev => {
+          const newMap = new Map(prev);
+          newMap.set(newPointId, {x: edgeInfo.edgePoint.x, y: edgeInfo.edgePoint.y});
+          return newMap;
+        });
+        
+        // Generate advanced guides for this point
+        generateAdvancedGuides(newPoints.length - 1);
+        
+        // Set cursor
+        if (canvasRef.current) {
+          canvasRef.current.style.cursor = 'grabbing';
+        }
       }
     }
   };
@@ -1173,34 +1215,6 @@ export default function ClipPathGenerator() {
         Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2)
       );
       return distance < threshold;
-    });
-  };
-
-  // Add a new point
-  const handleAddPoint = (e: React.MouseEvent) => {
-    if (shape.type !== 'polygon') return;
-    
-    // Don't add a point if we're currently dragging or just finished dragging
-    if (isDragging || hasMoved) return;
-    
-    // Prevent duplicate clicks within 300ms
-    const now = Date.now();
-    if (now - lastClickTimeRef.current < 300) {
-      return;
-    }
-    lastClickTimeRef.current = now;
-    
-    const { x, y } = calculatePosition(e);
-    
-    // Don't add points too close to existing ones
-    if (isNearExistingPoint(x, y)) {
-      return;
-    }
-    
-    const newPoint: Point = { id: generateId(), x, y };
-    setShape({
-      ...shape,
-      points: [...shape.points, newPoint]
     });
   };
 
@@ -1234,26 +1248,6 @@ export default function ClipPathGenerator() {
       ...shape,
       points: shape.points.filter(p => p.id !== pointId)
     });
-  };
-
-  // Get canvas click handler based on current state
-  const getCanvasClickHandler = () => {
-    if (shape.type !== 'polygon') return undefined;
-    
-    // Add click handler only when not dragging
-    return (e: React.MouseEvent) => {
-      if (isDragging || hasMoved) return;
-      
-      // Get the position of the click
-      const { x, y } = calculatePosition(e);
-      
-      // Don't add points inside the clipped area
-      if (isPointInPolygon(x, y, shape.points)) {
-        return;
-      }
-      
-      handleAddPoint(e);
-    };
   };
 
   // Check if a point is inside the polygon
@@ -1345,7 +1339,7 @@ export default function ClipPathGenerator() {
     setActiveGuides(guides);
   };
 
-  // Update the deduplicateIntersectionPoints function to be more permissive with showing intersections
+  // Update the deduplicateIntersectionPoints function to be more selective
   const deduplicateIntersectionPoints = (points: Array<{
     x: number;
     y: number;
@@ -1355,6 +1349,7 @@ export default function ClipPathGenerator() {
     circle?: { cx: number; cy: number; r: number }; // Add circle reference
     line?: number; // Add line reference
   }>) => {
+    // Only show points that are on active guides
     const uniquePoints = new Map();
     
     // Determine which guide type is currently the primary focus
@@ -1363,29 +1358,29 @@ export default function ClipPathGenerator() {
     const hasVerticalSnap = snappedGuides.vertical.length > 0;
     const hasAngleSnap = snappedGuides.angles.length > 0;
     
+    // If no guides are active, return an empty array
+    if (!hasCircleSnap && !hasHorizontalSnap && !hasVerticalSnap && !hasAngleSnap) {
+      return [];
+    }
+    
     // Filter points based on the current snap context
     const filteredPoints = points.filter(point => {
-      // If no guides are snapped, don't show any points
-      if (!hasCircleSnap && !hasHorizontalSnap && !hasVerticalSnap && !hasAngleSnap) {
-        return false;
-      }
-      
-      // Always show circle-line intersections when either the circle or line is snapped
+      // For circle-line intersections, show only if either the circle or line is snapped
       if (point.type === 'circle-line') {
         // For horizontal line intersections
-        if (hasHorizontalSnap && point.y !== undefined) {
+        if (point.y !== undefined && hasHorizontalSnap) {
           const matchesSnappedLine = snappedGuides.horizontal.some(h => Math.abs(h - point.y) < 0.5);
           if (matchesSnappedLine) return true;
         }
         
         // For vertical line intersections
-        if (hasVerticalSnap && point.x !== undefined) {
+        if (point.x !== undefined && hasVerticalSnap) {
           const matchesSnappedLine = snappedGuides.vertical.some(v => Math.abs(v - point.x) < 0.5);
           if (matchesSnappedLine) return true;
         }
         
         // Check if this point is from a snapped circle
-        if (hasCircleSnap && point.circle) {
+        if (point.circle && hasCircleSnap) {
           const isRelatedToSnappedCircle = snappedGuides.circles.some(c => 
             Math.abs(c.cx - point.circle!.cx) < 1 && 
             Math.abs(c.cy - point.circle!.cy) < 1 && 
@@ -1393,9 +1388,11 @@ export default function ClipPathGenerator() {
           );
           return isRelatedToSnappedCircle;
         }
+        
+        return false;
       }
       
-      // Show circle-circle intersections when either circle is snapped
+      // Show circle-circle intersections only when either circle is snapped
       if (point.type === 'circle-circle') {
         // Only show if this point is related to a snapped circle
         if (point.circle && hasCircleSnap) {
@@ -1409,21 +1406,18 @@ export default function ClipPathGenerator() {
         return false;
       }
       
-      // Show line-line intersections when at least one line is snapped
-      if (point.type === 'line-line' && (hasHorizontalSnap || hasVerticalSnap)) {
-        if (hasHorizontalSnap && point.y !== undefined) {
-          const matchesSnappedLine = snappedGuides.horizontal.some(h => Math.abs(h - point.y) < 0.5);
-          if (matchesSnappedLine) return true;
-        }
-        if (hasVerticalSnap && point.x !== undefined) {
-          const matchesSnappedLine = snappedGuides.vertical.some(v => Math.abs(v - point.x) < 0.5);
-          if (matchesSnappedLine) return true;
+      // Show line-line intersections only when both lines are snapped
+      if (point.type === 'line-line') {
+        if (hasHorizontalSnap && hasVerticalSnap && point.y !== undefined && point.x !== undefined) {
+          const matchesSnappedHLine = snappedGuides.horizontal.some(h => Math.abs(h - point.y) < 0.5);
+          const matchesSnappedVLine = snappedGuides.vertical.some(v => Math.abs(v - point.x) < 0.5);
+          return matchesSnappedHLine && matchesSnappedVLine;
         }
         return false;
       }
       
-      // Always prioritize showing fully snapped points
-      return point.isSnapped || point.hasSnappedGuide;
+      // For any other type, require the point to be snapped
+      return point.isSnapped;
     });
     
     // Process each point and use a key based on rounded coordinates
@@ -1604,6 +1598,110 @@ export default function ClipPathGenerator() {
     }
   };
 
+  // New function to check if a point is on a polygon edge
+  const isPointOnPolygonEdge = (x: number, y: number, points: Point[]): {
+    isOnEdge: boolean;
+    edgePoint: {x: number, y: number};
+    edge: {startIndex: number, endIndex: number};
+  } => {
+    // Default return value
+    const result = {
+      isOnEdge: false,
+      edgePoint: {x, y},
+      edge: {startIndex: 0, endIndex: 0}
+    };
+    
+    if (points.length < 3) return result;
+    
+    // Threshold distance for edge detection (adjust as needed)
+    const edgeThreshold = 4;
+    
+    // Check each edge of the polygon
+    for (let i = 0; i < points.length; i++) {
+      const currentPoint = points[i];
+      const nextPoint = points[(i + 1) % points.length];
+      
+      // Calculate perpendicular distance from point to line segment
+      const distance = distanceToLineSegment(
+        x, y,
+        currentPoint.x, currentPoint.y,
+        nextPoint.x, nextPoint.y
+      );
+      
+      if (distance < edgeThreshold) {
+        // Find the closest point on the line segment
+        const closestPoint = closestPointOnLineSegment(
+          x, y,
+          currentPoint.x, currentPoint.y,
+          nextPoint.x, nextPoint.y
+        );
+        
+        result.isOnEdge = true;
+        result.edgePoint = closestPoint;
+        result.edge = {
+          startIndex: i,
+          endIndex: (i + 1) % points.length
+        };
+        return result;
+      }
+    }
+    
+    return result;
+  };
+
+  // Helper function to calculate perpendicular distance from point to line segment
+  const distanceToLineSegment = (
+    px: number, py: number,
+    x1: number, y1: number,
+    x2: number, y2: number
+  ): number => {
+    // Calculate the squared length of the line segment
+    const lineSegmentLengthSquared = Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
+    
+    // If the line segment is actually a point, return the distance to that point
+    if (lineSegmentLengthSquared === 0) {
+      return Math.hypot(px - x1, py - y1);
+    }
+    
+    // Calculate the projection parameter
+    const t = Math.max(0, Math.min(1, 
+      ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / lineSegmentLengthSquared
+    ));
+    
+    // Calculate the closest point on the line segment
+    const closestX = x1 + t * (x2 - x1);
+    const closestY = y1 + t * (y2 - y1);
+    
+    // Return the distance to the closest point
+    return Math.hypot(px - closestX, py - closestY);
+  };
+
+  // Helper function to find the closest point on a line segment
+  const closestPointOnLineSegment = (
+    px: number, py: number,
+    x1: number, y1: number,
+    x2: number, y2: number
+  ): {x: number, y: number} => {
+    // Calculate the squared length of the line segment
+    const lineSegmentLengthSquared = Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
+    
+    // If the line segment is actually a point, return that point
+    if (lineSegmentLengthSquared === 0) {
+      return {x: x1, y: y1};
+    }
+    
+    // Calculate the projection parameter
+    const t = Math.max(0, Math.min(1, 
+      ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / lineSegmentLengthSquared
+    ));
+    
+    // Calculate and return the closest point on the line segment
+    return {
+      x: x1 + t * (x2 - x1),
+      y: y1 + t * (y2 - y1)
+    };
+  };
+
   return (
     <div className="space-y-6">
       {/* Controls */}
@@ -1614,7 +1712,6 @@ export default function ClipPathGenerator() {
             <div 
               ref={canvasRef}
               className="absolute inset-0 bg-grid-pattern"
-              onClick={getCanvasClickHandler()}
               onMouseDown={handleCanvasMouseDown}
               style={{cursor: isDragging ? 'grabbing' : (isPointInPolygon(50, 50, shape.points) ? 'move' : 'default')}}>
 
@@ -1728,7 +1825,10 @@ export default function ClipPathGenerator() {
                   })}
                   
                   {/* Render circle-line intersections separately from the circles */}
-                  {isDragging && (() => {
+                  {(() => {
+                    // Only process intersections when actively dragging
+                    if (!isDragging) return null;
+                    
                     // Collect all intersection points into a single array
                     const allIntersectionPoints: Array<{
                       x: number;
@@ -1848,23 +1948,9 @@ export default function ClipPathGenerator() {
                     // Collect circle-circle intersections
                     if (activeGuides.circles.length > 1) {
                       for (let i = 0; i < activeGuides.circles.length; i++) {
-                        const circle1 = activeGuides.circles[i];
-                        const isCircle1Snapped = snappedGuides.circles.some(c => 
-                          Math.abs(c.cx - circle1.cx) < 1 && 
-                          Math.abs(c.cy - circle1.cy) < 1 && 
-                          Math.abs(c.r - circle1.r) < 1
-                        );
-                        
                         for (let j = i + 1; j < activeGuides.circles.length; j++) {
+                          const circle1 = activeGuides.circles[i];
                           const circle2 = activeGuides.circles[j];
-                          const isCircle2Snapped = snappedGuides.circles.some(c => 
-                            Math.abs(c.cx - circle2.cx) < 1 && 
-                            Math.abs(c.cy - circle2.cy) < 1 && 
-                            Math.abs(c.r - circle2.r) < 1
-                          );
-                          
-                          const isIntersectionSnapped = isCircle1Snapped || isCircle2Snapped;
-                          const hasSnappedGuide = isCircle1Snapped || isCircle2Snapped;
                           
                           // Calculate distance between circle centers
                           const centerDist = Math.hypot(circle1.cx - circle2.cx, circle1.cy - circle2.cy);
@@ -1892,24 +1978,54 @@ export default function ClipPathGenerator() {
                             const intersection2X = p2x - h * xFactor;
                             const intersection2Y = p2y - h * yFactor;
                             
-                            // Simply add both intersection points without distance checks
-                            allIntersectionPoints.push({
-                              x: intersection1X,
-                              y: intersection1Y,
-                              isSnapped: isIntersectionSnapped,
-                              type: 'circle-circle',
-                              hasSnappedGuide,
-                              circle: isCircle1Snapped ? circle1 : circle2
-                            });
+                            // Check if either circle is snapped
+                            const isCircle1Snapped = snappedGuides.circles.some(c => 
+                              Math.abs(c.cx - circle1.cx) < 1 && 
+                              Math.abs(c.cy - circle1.cy) < 1 && 
+                              Math.abs(c.r - circle1.r) < 1
+                            );
                             
-                            allIntersectionPoints.push({
-                              x: intersection2X,
-                              y: intersection2Y,
-                              isSnapped: isIntersectionSnapped,
-                              type: 'circle-circle',
-                              hasSnappedGuide,
-                              circle: isCircle1Snapped ? circle1 : circle2
-                            });
+                            const isCircle2Snapped = snappedGuides.circles.some(c => 
+                              Math.abs(c.cx - circle2.cx) < 1 && 
+                              Math.abs(c.cy - circle2.cy) < 1 && 
+                              Math.abs(c.r - circle2.r) < 1
+                            );
+                            
+                            const isIntersectionSnapped = isCircle1Snapped || isCircle2Snapped;
+                            const hasSnappedGuide = isCircle1Snapped || isCircle2Snapped;
+                            
+                            // Only add intersection points if at least one circle is snapped
+                            // or if we're very close to the intersection point
+                            const mouseX = activePoint ? activePoint.x : 0;
+                            const mouseY = activePoint ? activePoint.y : 0;
+                            const dist1 = Math.hypot(mouseX - intersection1X, mouseY - intersection1Y);
+                            const dist2 = Math.hypot(mouseX - intersection2X, mouseY - intersection2Y);
+                            const isNearIntersection1 = dist1 < SNAP_STRENGTH * 3;
+                            const isNearIntersection2 = dist2 < SNAP_STRENGTH * 3;
+                            
+                            // Add first intersection if it meets criteria
+                            if (isCircle1Snapped || isCircle2Snapped || isNearIntersection1) {
+                              allIntersectionPoints.push({
+                                x: intersection1X,
+                                y: intersection1Y,
+                                isSnapped: isIntersectionSnapped,
+                                type: 'circle-circle',
+                                hasSnappedGuide: hasSnappedGuide,
+                                circle: isCircle1Snapped ? circle1 : (isCircle2Snapped ? circle2 : circle1)
+                              });
+                            }
+                            
+                            // Add second intersection if it meets criteria
+                            if (isCircle1Snapped || isCircle2Snapped || isNearIntersection2) {
+                              allIntersectionPoints.push({
+                                x: intersection2X,
+                                y: intersection2Y,
+                                isSnapped: isIntersectionSnapped,
+                                type: 'circle-circle',
+                                hasSnappedGuide: hasSnappedGuide,
+                                circle: isCircle1Snapped ? circle1 : (isCircle2Snapped ? circle2 : circle1)
+                              });
+                            }
                           }
                         }
                       }
@@ -1918,7 +2034,38 @@ export default function ClipPathGenerator() {
                     // Deduplicate intersection points
                     const uniqueIntersectionPoints = deduplicateIntersectionPoints(allIntersectionPoints);
 
-                    // Render the unique intersection points
+                    // Only render intersection points if there are active guides
+                    const hasActiveGuides = 
+                      snappedGuides.horizontal.length > 0 || 
+                      snappedGuides.vertical.length > 0 || 
+                      snappedGuides.circles.length > 0 || 
+                      snappedGuides.angles.length > 0;
+
+                    // Return null if no active guides to avoid showing points by default
+                    if (!hasActiveGuides && uniqueIntersectionPoints.length > 0) {
+                      // Show only intersection points that are close to the current dragging point
+                      const closeIntersections = uniqueIntersectionPoints.filter(point => {
+                        if (!activePoint) return false;
+                        const dist = Math.hypot(point.x - activePoint.x, point.y - activePoint.y);
+                        return dist < SNAP_STRENGTH * 3;
+                      });
+                      
+                      if (closeIntersections.length === 0) return null;
+                      
+                      // Render only close intersection points
+                      return closeIntersections.map((point, index) => (
+                        <div 
+                          key={`intersection-${index}`}
+                          className={`guide-intersection ${point.isSnapped ? 'guide-intersection-snapped' : ''}`} 
+                          style={{ 
+                            top: `${point.y}%`, 
+                            left: `${point.x}%`
+                          }} 
+                        />
+                      ));
+                    }
+
+                    // Render the unique intersection points when there are active guides
                     return uniqueIntersectionPoints.map((point, index) => (
                       <div 
                         key={`intersection-${index}`}
@@ -1949,7 +2096,7 @@ export default function ClipPathGenerator() {
               {shape.type === 'polygon' && shape.points.map(point => (
                 <div
                   key={point.id}
-                  className={`draggable-point ${snappedPointId === point.id ? 'point-snap-highlight' : ''}`}
+                  className={`draggable-point group ${snappedPointId === point.id ? 'point-snap-highlight' : ''}`}
                   style={{
                     left: `${point.x}%`, 
                     top: `${point.y}%`,
@@ -1961,9 +2108,9 @@ export default function ClipPathGenerator() {
                   }}
                   onMouseDown={(e) => handlePointMouseDown(e, point)}
                 >
-                  {/* Delete button for points */}
+                  {/* Delete button for points - now visible on point hover */}
                   <button 
-                    className="absolute -top-6 -right-6 w-5 h-5 bg-white bg-opacity-80 rounded-full flex items-center justify-center text-red-500 opacity-0 hover:opacity-100 transition-opacity"
+                    className="absolute -top-6 -right-6 w-5 h-5 bg-white bg-opacity-80 rounded-full flex items-center justify-center text-red-500 group-hover:opacity-100 opacity-0 transition-opacity"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -2141,7 +2288,7 @@ clip-path: ${clipPathCSS};
                 <h4 className="font-medium text-foreground mb-1">Instructions:</h4>
                 <ul className="list-disc pl-5 space-y-1">
                   <li>Drag the points to modify the shape</li>
-                  <li>Click outside the shape to add a new point</li>
+                  <li>Click and drag on the edge of the shape to add a new point</li>
                   <li>Click and drag inside the shape to move the entire shape</li>
                   <li>Hold Shift while dragging to temporarily disable grid snapping</li>
                   <li>Hover over a point to reveal the delete button</li>

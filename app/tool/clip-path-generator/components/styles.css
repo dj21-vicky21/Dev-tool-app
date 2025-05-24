@@ -142,43 +142,31 @@
 .circle-circle-intersection,
 .circle-line-intersection {
   position: absolute;
-  width: 8px;
-  height: 8px;
-  background-color: rgba(56, 189, 248, 0.7); /* Bright teal/blue instead of yellow */
-  border: 1.5px solid white;
+  width: 10px;
+  height: 10px;
+  background-color: rgba(56, 189, 248, 0.8); /* Bright teal/blue instead of yellow */
+  border: 2px solid white;
   border-radius: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
   z-index: 28;
-  box-shadow: 0 0 5px rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 5px rgba(56, 189, 248, 0.7);
 }
 
 /* Style for snapped intersections - unified appearance */
 .guide-intersection-snapped,
 .circle-circle-intersection.guide-intersection-snapped,
 .circle-line-intersection.guide-intersection-snapped {
-  width: 9px;
-  height: 9px;
-  background-color: rgba(6, 182, 212, 0.8); /* Slightly darker teal when snapped */
-  box-shadow: 0 0 6px rgba(6, 182, 212, 0.6);
+  width: 12px;
+  height: 12px;
+  background-color: rgba(6, 182, 212, 0.9); /* Slightly darker teal when snapped */
+  box-shadow: 0 0 8px rgba(6, 182, 212, 0.8);
   z-index: 30;
-  animation: pulse-intersection 2s infinite ease-in-out;
 }
 
-/* Animation for snapped intersection points */
+/* Remove pulse animation for intersection points */
 @keyframes pulse-intersection {
-  0% {
-    transform: translate(-50%, -50%) scale(0.95);
-    box-shadow: 0 0 5px rgba(6, 182, 212, 0.5);
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.1);
-    box-shadow: 0 0 8px rgba(6, 182, 212, 0.8);
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(0.95);
-    box-shadow: 0 0 5px rgba(6, 182, 212, 0.5);
-  }
+  /* Empty to disable animation */
 }
 
 /* Add styles for snapped guides */
@@ -373,23 +361,11 @@
   transform: translate(-50%, -50%);
   pointer-events: none;
   z-index: 15;
-  animation: pulse-point-snap 1.5s infinite ease-in-out;
 }
 
-/* Pulse animation for point snap indicator */
+/* Disable pulse animation for point snap indicator */
 @keyframes pulse-point-snap {
-  0% {
-    transform: translate(-50%, -50%) scale(0.8);
-    opacity: 0.4;
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.1);
-    opacity: 0.8;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(0.8);
-    opacity: 0.4;
-  }
+  /* Empty to disable animation */
 }
 
 /* Enhance the visibility of points during dragging to make them more noticeable */
@@ -435,12 +411,16 @@
 /* Reduce the highlight area size and strength */
 .original-position-area {
   position: absolute;
-  width: 12px;
-  height: 12px;
-  background-color: rgba(255, 192, 0, 0.1); /* Much more transparent */
-  border: 1px dashed rgba(255, 192, 0, 0.3);
-  border-radius: 50%;
   transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px dashed rgba(239, 71, 170, 0.6);
+  width: 20px;
+  height: 20px;
   pointer-events: none;
-  z-index: 15;
+  z-index: 5;
+}
+
+/* Disable pulse animation for original position */
+@keyframes pulse-original-position {
+  /* Empty to disable animation */
 } 
