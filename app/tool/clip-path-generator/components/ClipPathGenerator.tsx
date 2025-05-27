@@ -1106,14 +1106,190 @@ export default function ClipPathGenerator() {
         }, 300);
       };
       
+      // Touch move handler for mobile devices
+      const handleTouchMoveGlobal = (e: TouchEvent) => {
+        // Prevent default to stop scrolling/zooming while manipulating the shape
+        e.preventDefault();
+        
+        // Get the touch
+        const touch = e.touches[0];
+        const touchPos = calculatePositionFromTouch(touch);
+        
+        // Handle shape movement
+        if (isMovingShape && moveStartPosition) {
+          const deltaX = touchPos.x - moveStartPosition.x;
+          const deltaY = touchPos.y - moveStartPosition.y;
+          
+          // Calculate the potential new positions of all points
+          const newPositions = shape.points.map(point => ({
+            ...point,
+            x: point.x + deltaX,
+            y: point.y + deltaY
+          }));
+          
+          // Check if any of the new positions would go out of bounds
+          const wouldExceedBoundary = newPositions.some(point => 
+            point.x < 0 || point.x > 100 || 
+            point.y < 0 || point.y > 100
+          );
+          
+          if (wouldExceedBoundary) {
+            // If would exceed, calculate the maximum allowed movement
+            let maxDeltaX = deltaX;
+            let maxDeltaY = deltaY;
+            
+            // For each point, calculate how far it can move before hitting a boundary
+            shape.points.forEach(point => {
+              // X-axis constraints
+              if (deltaX > 0) { // Moving right
+                const distanceToRightEdge = 100 - point.x;
+                maxDeltaX = Math.min(maxDeltaX, distanceToRightEdge);
+              } else if (deltaX < 0) { // Moving left
+                const distanceToLeftEdge = point.x;
+                maxDeltaX = Math.max(maxDeltaX, -distanceToLeftEdge);
+              }
+              
+              // Y-axis constraints
+              if (deltaY > 0) { // Moving down
+                const distanceToBottomEdge = 100 - point.y;
+                maxDeltaY = Math.min(maxDeltaY, distanceToBottomEdge);
+              } else if (deltaY < 0) { // Moving up
+                const distanceToTopEdge = point.y;
+                maxDeltaY = Math.max(maxDeltaY, -distanceToTopEdge);
+              }
+            });
+            
+            // Apply the maximum allowed movement
+            const updatedPoints = shape.points.map(point => ({
+              ...point,
+              x: point.x + maxDeltaX,
+              y: point.y + maxDeltaY
+            }));
+            
+            // Update the start position for the next movement
+            setMoveStartPosition(touchPos);
+            
+            // Update the shape with the new points
+            setShape({ ...shape, points: updatedPoints });
+          } else {
+            // If no boundary issues, proceed with normal movement
+            const updatedPoints = shape.points.map(point => ({
+              ...point,
+              x: point.x + deltaX,
+              y: point.y + deltaY
+            }));
+            
+            // Update the start position for the next movement
+            setMoveStartPosition(touchPos);
+            
+            // Update the shape with the new points
+            setShape({ ...shape, points: updatedPoints });
+          }
+          
+          return; // Skip point movement
+        }
+        
+        // Handle point movement
+        if (isDragging && activePoint) {
+          // Check if the touch has moved significantly to consider it a drag
+          if (!localHasMoved) {
+            if (Math.abs(touchPos.x - activePoint.x) > 1 || Math.abs(touchPos.y - activePoint.y) > 1) {
+              localHasMoved = true;
+            }
+          }
+          
+          const newX = Math.max(0, Math.min(100, touchPos.x));
+          const newY = Math.max(0, Math.min(100, touchPos.y));
+          
+          // Use requestAnimationFrame for smoother updates
+          requestAnimationFrame(() => {
+            // Update the active point position
+            const updatedPoint = {
+              ...activePoint,
+              x: Math.max(0, Math.min(100, newX)),
+              y: Math.max(0, Math.min(100, newY))
+            };
+            
+            // Check if position actually changed
+            if (updatedPoint.x !== activePoint.x || updatedPoint.y !== activePoint.y) {
+              setShape(prevShape => {
+                const newPoints = [...prevShape.points];
+                const idx = newPoints.findIndex(p => p.id === activePoint.id);
+                if (idx >= 0) {
+                  newPoints[idx] = updatedPoint;
+                }
+                return {
+                  ...prevShape,
+                  points: newPoints
+                };
+              });
+            }
+          });
+        }
+      };
+      
+      // Touch end handler (for mobile)
+      const handleTouchEndGlobal = () => {
+        // If we were dragging a point, store its final position
+        if (isDragging && activePoint) {
+          // Find the current position of the point
+          const pointIndex = shape.points.findIndex(p => p.id === activePoint.id);
+          if (pointIndex !== -1) {
+            const currentPos = shape.points[pointIndex];
+            
+            // Update the original position map if the point landed on a significant location
+            if (snappedGuides.horizontal.length > 0 || 
+                snappedGuides.vertical.length > 0 ||
+                snappedGuides.circles.length > 0 ||
+                snappedGuides.angles.length > 0) {
+              setOriginalPointPositions(prev => {
+                const newMap = new Map(prev);
+                newMap.set(currentPos.id, {x: currentPos.x, y: currentPos.y});
+                return newMap;
+              });
+            }
+          }
+        }
+        
+        // Clear the snapped point ID
+        setSnappedPointId(null);
+        setDraggedPointId(null);
+        
+        // Reset all interaction states
+        setIsDragging(false);
+        setActivePoint(null);
+        setIsMovingShape(false);
+        setMoveStartPosition(null);
+        
+        // Clear guides
+        setActiveGuides({ horizontal: [], vertical: [], circles: [], angles: [] });
+        setSnappedGuides({ horizontal: [], vertical: [], circles: [], angles: [] });
+        
+        // Reset cursor
+        if (canvasRef.current) {
+          canvasRef.current.style.cursor = 'default';
+        }
+        
+        // Hide snap lines after dragging ends
+        setTimeout(() => {
+          setVisibleGridLines([]);
+        }, 300);
+      };
+      
       // Add global event listeners
       window.addEventListener('mousemove', handleMouseMoveGlobal);
       window.addEventListener('mouseup', handleMouseUpGlobal);
+      window.addEventListener('touchmove', handleTouchMoveGlobal, { passive: false });
+      window.addEventListener('touchend', handleTouchEndGlobal);
+      window.addEventListener('touchcancel', handleTouchEndGlobal);
       
       // Clean up
       return () => {
         window.removeEventListener('mousemove', handleMouseMoveGlobal);
         window.removeEventListener('mouseup', handleMouseUpGlobal);
+        window.removeEventListener('touchmove', handleTouchMoveGlobal);
+        window.removeEventListener('touchend', handleTouchEndGlobal);
+        window.removeEventListener('touchcancel', handleTouchEndGlobal);
       };
     }
   }, [isDragging, activePoint, shape, snapToGrid, shiftPressed, gridLines, isMovingShape, moveStartPosition, showAdvancedGuides]);
@@ -1761,6 +1937,118 @@ export default function ClipPathGenerator() {
     };
   };
 
+  // Handle point touch start (mobile)
+  const handlePointTouchStart = (e: React.TouchEvent, point: Point) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setActivePoint(point);
+    setIsDragging(true);
+    setDraggedPointId(point.id);
+    
+    // Store the original position of the point
+    setOriginalPointPositions(prev => {
+      const newMap = new Map(prev);
+      newMap.set(point.id, {x: point.x, y: point.y});
+      return newMap;
+    });
+    
+    // Generate advanced guides for this point
+    generateAdvancedGuides(shape.points.indexOf(point));
+    
+    // Set cursor style
+    if (canvasRef.current) {
+      canvasRef.current.style.cursor = 'grabbing';
+    }
+  };
+
+  // Handle canvas touch start (mobile)
+  const handleCanvasTouchStart = (e: React.TouchEvent) => {
+    // Only allow actions on polygon shapes
+    if (shape.type !== 'polygon') return;
+
+    // Get touch position
+    const touch = e.touches[0];
+    const touchPos = calculatePositionFromTouch(touch);
+    
+    // Don't start if we're touching on or near a point
+    if (isNearExistingPoint(touchPos.x, touchPos.y, 15)) { // Larger threshold for touch
+      return;
+    }
+    
+    // Check if we're touching inside the polygon
+    const isInside = isPointInPolygon(touchPos.x, touchPos.y, shape.points);
+    
+    if (isInside) {
+      // Handle shape movement
+      e.preventDefault();
+      e.stopPropagation();
+      setIsMovingShape(true);
+      setMoveStartPosition(touchPos);
+      if (canvasRef.current) {
+        canvasRef.current.style.cursor = 'move';
+      }
+    } else {
+      // Check if we're on the edge of the polygon
+      const edgeInfo = isPointOnPolygonEdge(touchPos.x, touchPos.y, shape.points);
+      
+      if (edgeInfo.isOnEdge) {
+        // Start adding a new point by touching
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Create a new point at the edge location
+        const newPointId = generateId();
+        const newPoint: Point = { 
+          id: newPointId, 
+          x: edgeInfo.edgePoint.x, 
+          y: edgeInfo.edgePoint.y 
+        };
+        
+        // Insert the new point between the edge's start and end points
+        const newPoints = [...shape.points];
+        newPoints.splice(edgeInfo.edge.endIndex, 0, newPoint);
+        
+        // Update the shape with the new point
+        setShape({
+          ...shape,
+          points: newPoints
+        });
+        
+        // Set this new point as active for dragging
+        setActivePoint(newPoint);
+        setIsDragging(true);
+        setDraggedPointId(newPointId);
+        
+        // Store the original position of the point
+        setOriginalPointPositions(prev => {
+          const newMap = new Map(prev);
+          newMap.set(newPointId, {x: edgeInfo.edgePoint.x, y: edgeInfo.edgePoint.y});
+          return newMap;
+        });
+        
+        // Generate advanced guides for this point
+        generateAdvancedGuides(newPoints.length - 1);
+        
+        // Set cursor
+        if (canvasRef.current) {
+          canvasRef.current.style.cursor = 'grabbing';
+        }
+      }
+    }
+  };
+
+  // Calculate position from touch event
+  const calculatePositionFromTouch = (touch: React.Touch | Touch): { x: number, y: number } => {
+    if (!canvasRef.current) return { x: 0, y: 0 };
+    
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = ((touch.clientX - rect.left) / rect.width) * 100;
+    const y = ((touch.clientY - rect.top) / rect.height) * 100;
+    
+    return { x, y };
+  };
+
   return (
     <div className="space-y-6 clip-path-generator">
       {/* Controls */}
@@ -1772,6 +2060,7 @@ export default function ClipPathGenerator() {
               ref={canvasRef}
               className="absolute inset-0 bg-grid-pattern"
               onMouseDown={handleCanvasMouseDown}
+              onTouchStart={handleCanvasTouchStart}
               style={{
                 cursor: isDragging ? 'grabbing' : (isPointInPolygon(50, 50, shape.points) ? 'move' : 'default'),
               }}>
@@ -2173,6 +2462,7 @@ export default function ClipPathGenerator() {
                     transition: 'opacity 0.2s ease, transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out, background-color 0.2s ease'
                   }}
                   onMouseDown={(e) => handlePointMouseDown(e, point)}
+                  onTouchStart={(e) => handlePointTouchStart(e, point)}
                 >
                   {/* Delete button for points - now visible on point hover */}
                   <button 
