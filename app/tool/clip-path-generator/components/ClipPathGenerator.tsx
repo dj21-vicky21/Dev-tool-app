@@ -2082,6 +2082,22 @@ export default function ClipPathGenerator() {
                 />
               )}
 
+              {/* Full background image with reduced opacity during dragging */}
+              {backgroundImage && (isDragging || isMovingShape) && (
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    backgroundImage: `url(${backgroundImage})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    opacity: 0.2, // Very low opacity to serve as a guide
+                    transition: 'opacity 0.2s ease',
+                    zIndex: 1, // Above the grid but below the points
+                  }}
+                />
+              )}
+
               {/* Render the snap grid lines */}
               {gridLines.map(line => (
                 <div
