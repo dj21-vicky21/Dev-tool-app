@@ -35,6 +35,10 @@ export default function FeedbackForm() {
   const [feedbackType, setFeedbackType] = useState("feedback");
   const [toolName, setToolName] = useState(toolParam || "general");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);  // Add success state
+
+  const formRef = useRef<HTMLFormElement | null>(null);
 
   const resetForm = () => {
     setEmail("");
@@ -42,81 +46,63 @@ export default function FeedbackForm() {
     setToolName(toolParam || "general");
     setMessage("");
     formRef.current?.reset();
+    setTimeout(() => {
+      setIsSubmitted(false)
+    }, 3000);
   };
 
-  const formRef = useRef<HTMLFormElement | null>(null);
-    const [loading, setLoading] = useState<boolean>(false)
-
-  const toastMessage = (isSuccess: boolean) => {
-    toast({
-        title: isSuccess ? `Successfully sent!` : `Failed to send!`,
-    })
-}
-
-
   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     try {
-      e.preventDefault();
       setLoading(true);
-      
-      e.preventDefault();
 
       if (formRef.current) {
-          setLoading(true)
-          // Collect form data
-          const formData = new FormData(formRef.current);
+        const formData = new FormData(formRef.current);
+        const formDataObject: { [key: string]: string } = {};
+        
+        formData.forEach((value, key) => {
+          formDataObject[key] = value.toString();
+        });
 
-          // Convert FormData to a plain object
-          const formDataObject: { [key: string]: string } = {};
-          
-          formData.forEach((value, key) => {
-              formDataObject[key] = value.toString(); // Ensure all values are strings
-          });
+        const json = JSON.stringify(formDataObject);
+        const username = process.env.NEXT_PUBLIC_BASIC_AUTH_USER;
+        const password = process.env.NEXT_PUBLIC_BASIC_AUTH_PASSWORD;
+        const base64Credentials = btoa(`${username}:${password}`);
+        const authHeader = `Basic ${base64Credentials}`;
 
-          // Convert object to JSON
-          const json = JSON.stringify(formDataObject);
+        const response = await axios.post('/api/feedback', json, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': authHeader,
+            'source': 'devgarage',
+          },
+        });
 
-          // Basic Authentication credentials
-          const username = process.env.NEXT_PUBLIC_BASIC_AUTH_USER; // your username
-          const password = process.env.NEXT_PUBLIC_BASIC_AUTH_PASSWORD; //  your password
-          const base64Credentials = btoa(`${username}:${password}`);
-          const authHeader = `Basic ${base64Credentials}`;
-
-          try {
-              const response = await axios.post('/api/feedback', json, {
-                  headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': authHeader,
-                      'source': 'devgarage', // Include additional headers as needed
-                  },
-              });
-
-              const result = response.data;
-              if (response.status === 200 && result.success) {
-                  setLoading(false)
-                  console.info("Form submitted successfully!");
-                  resetForm(); // Reset the form after successful submission
-              } else {
-                  console.error("Form submission failed!", result);
-              }
-          } catch (error) {
-              toastMessage(false)
-              if(error instanceof AxiosError){
-                  console.error("Error submitting form:", error?.response?.data);
-                  return
-              }
-              
-              console.error("Error submitting form:", error);
-          }
+        const result = response.data;
+        if (response.status === 200 && result.success) {
+          resetForm();
+          setIsSubmitted(true);  // Show success card
+        } else {
+          throw new Error(result.message || "Form submission failed");
+        }
       }
     } catch (error) {
-      console.error("Error submitting feedback:", error);
-      setLoading(false);
-      toast({
-        title: "Error",
-        description: "Failed to submit feedback. Please try again later.",
-      });
-    } 
+      if(error instanceof AxiosError) {
+        toast({
+          title: "Error",
+          description: error.response?.data?.message || "Failed to submit feedback. Please try again.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to submit feedback. Please try again later.",
+        });
+        console.error("Error submitting feedback:", error);
+      }
+    } finally {
+      setLoading(false);  // Always reset loading state
+    }
   };
 
   return (
@@ -132,7 +118,20 @@ export default function FeedbackForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!loading ? (
+          {isSubmitted ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                <CheckIcon className="h-6 w-6 text-green-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">
+                Thank You for Your Feedback!
+              </h3>
+              <p className="text-muted-foreground max-w-md">
+                We appreciate your input and will use it to improve our tools.
+                Your feedback has been submitted successfully.
+              </p>
+            </div>
+          ) : (
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -147,6 +146,7 @@ export default function FeedbackForm() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -154,7 +154,12 @@ export default function FeedbackForm() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="feedbackType">Feedback Type</Label>
-                  <Select value={feedbackType} name="feedbackType" onValueChange={setFeedbackType}>
+                  <Select 
+                    value={feedbackType} 
+                    name="feedbackType" 
+                    onValueChange={setFeedbackType}
+                    disabled={loading}
+                  >
                     <SelectTrigger id="feedbackType">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
@@ -171,7 +176,12 @@ export default function FeedbackForm() {
 
                 <div className="space-y-2">
                   <Label htmlFor="toolName">Related Tool</Label>
-                  <Select value={toolName} name="toolName" onValueChange={setToolName}>
+                  <Select 
+                    value={toolName} 
+                    name="toolName" 
+                    onValueChange={setToolName}
+                    disabled={loading}
+                  >
                     <SelectTrigger id="toolName">
                       <SelectValue placeholder="Select a tool (optional)" />
                     </SelectTrigger>
@@ -201,6 +211,7 @@ export default function FeedbackForm() {
                   onChange={(e) => setMessage(e.target.value)}
                   required
                   className="min-h-32 max-h-52"
+                  disabled={loading}
                 />
               </div>
 
@@ -210,7 +221,10 @@ export default function FeedbackForm() {
                 disabled={loading}
               >
                 {loading ? (
-                  <>Submitting...</>
+                  <>
+                    <span className="animate-spin mr-2">⏳</span>
+                    Submitting...
+                  </>
                 ) : (
                   <>
                     <SendIcon className="mr-2 h-4 w-4" />
@@ -219,19 +233,6 @@ export default function FeedbackForm() {
                 )}
               </Button>
             </form>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
-                <CheckIcon className="h-6 w-6 text-green-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">
-                Thank You for Your Feedback!
-              </h3>
-              <p className="text-muted-foreground max-w-md">
-                We appreciate your input and will use it to improve our tools.
-                Your feedback has been submitted successfully.
-              </p>
-            </div>
           )}
         </CardContent>
       </Card>
