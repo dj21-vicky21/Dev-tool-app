@@ -1337,6 +1337,56 @@ export default function ClipPathGenerator() {
 
     const mousePos = calculatePosition(e);
     
+    // First check if we're on the edge of the polygon
+    // This takes priority over other checks to make adding points easier
+    const edgeInfo = isPointOnPolygonEdge(mousePos.x, mousePos.y, shape.points);
+    
+    if (edgeInfo.isOnEdge) {
+      // Start adding a new point by dragging
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Create a new point at the edge location
+      const newPointId = generateId();
+      const newPoint: Point = { 
+        id: newPointId, 
+        x: edgeInfo.edgePoint.x, 
+        y: edgeInfo.edgePoint.y 
+      };
+      
+      // Insert the new point between the edge's start and end points
+      const newPoints = [...shape.points];
+      newPoints.splice(edgeInfo.edge.endIndex, 0, newPoint);
+      
+      // Update the shape with the new point
+      setShape({
+        ...shape,
+        points: newPoints
+      });
+      
+      // Set this new point as active for dragging
+      setActivePoint(newPoint);
+      setIsDragging(true);
+      setDraggedPointId(newPointId);
+      
+      // Store the original position of the point
+      setOriginalPointPositions(prev => {
+        const newMap = new Map(prev);
+        newMap.set(newPointId, {x: edgeInfo.edgePoint.x, y: edgeInfo.edgePoint.y});
+        return newMap;
+      });
+      
+      // Generate advanced guides for this point
+      generateAdvancedGuides(newPoints.length - 1);
+      
+      // Set cursor
+      if (canvasRef.current) {
+        canvasRef.current.style.cursor = 'grabbing';
+      }
+      
+      return;
+    }
+    
     // Don't start if we're clicking on or near a point
     if (isNearExistingPoint(mousePos.x, mousePos.y, 10)) {
       return;
@@ -1353,53 +1403,6 @@ export default function ClipPathGenerator() {
       setMoveStartPosition(mousePos);
       if (canvasRef.current) {
         canvasRef.current.style.cursor = 'move';
-      }
-    } else {
-      // Check if we're on the edge of the polygon
-      const edgeInfo = isPointOnPolygonEdge(mousePos.x, mousePos.y, shape.points);
-      
-      if (edgeInfo.isOnEdge) {
-        // Start adding a new point by dragging
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Create a new point at the edge location
-        const newPointId = generateId();
-        const newPoint: Point = { 
-          id: newPointId, 
-          x: edgeInfo.edgePoint.x, 
-          y: edgeInfo.edgePoint.y 
-        };
-        
-        // Insert the new point between the edge's start and end points
-        const newPoints = [...shape.points];
-        newPoints.splice(edgeInfo.edge.endIndex, 0, newPoint);
-        
-        // Update the shape with the new point
-        setShape({
-          ...shape,
-          points: newPoints
-        });
-        
-        // Set this new point as active for dragging
-        setActivePoint(newPoint);
-        setIsDragging(true);
-        setDraggedPointId(newPointId);
-        
-        // Store the original position of the point
-        setOriginalPointPositions(prev => {
-          const newMap = new Map(prev);
-          newMap.set(newPointId, {x: edgeInfo.edgePoint.x, y: edgeInfo.edgePoint.y});
-          return newMap;
-        });
-        
-        // Generate advanced guides for this point
-        generateAdvancedGuides(newPoints.length - 1);
-        
-        // Set cursor
-        if (canvasRef.current) {
-          canvasRef.current.style.cursor = 'grabbing';
-        }
       }
     }
   };
@@ -1848,8 +1851,11 @@ export default function ClipPathGenerator() {
     
     if (points.length < 3) return result;
     
-    // Threshold distance for edge detection (adjust as needed)
-    const edgeThreshold = 4;
+    // Threshold distance for edge detection (increased for better sensitivity)
+    const edgeThreshold = 3;
+    
+    // Track the closest edge
+    let minDistance = edgeThreshold;
     
     // Check each edge of the polygon
     for (let i = 0; i < points.length; i++) {
@@ -1863,7 +1869,10 @@ export default function ClipPathGenerator() {
         nextPoint.x, nextPoint.y
       );
       
-      if (distance < edgeThreshold) {
+      // Keep track of the closest edge
+      if (distance < minDistance) {
+        minDistance = distance;
+        
         // Find the closest point on the line segment
         const closestPoint = closestPointOnLineSegment(
           x, y,
@@ -1877,7 +1886,6 @@ export default function ClipPathGenerator() {
           startIndex: i,
           endIndex: (i + 1) % points.length
         };
-        return result;
       }
     }
     
@@ -1971,6 +1979,55 @@ export default function ClipPathGenerator() {
     const touch = e.touches[0];
     const touchPos = calculatePositionFromTouch(touch);
     
+    // First check if we're on the edge of the polygon - this has priority
+    const edgeInfo = isPointOnPolygonEdge(touchPos.x, touchPos.y, shape.points);
+    
+    if (edgeInfo.isOnEdge) {
+      // Start adding a new point by touching
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Create a new point at the edge location
+      const newPointId = generateId();
+      const newPoint: Point = { 
+        id: newPointId, 
+        x: edgeInfo.edgePoint.x, 
+        y: edgeInfo.edgePoint.y 
+      };
+      
+      // Insert the new point between the edge's start and end points
+      const newPoints = [...shape.points];
+      newPoints.splice(edgeInfo.edge.endIndex, 0, newPoint);
+      
+      // Update the shape with the new point
+      setShape({
+        ...shape,
+        points: newPoints
+      });
+      
+      // Set this new point as active for dragging
+      setActivePoint(newPoint);
+      setIsDragging(true);
+      setDraggedPointId(newPointId);
+      
+      // Store the original position of the point
+      setOriginalPointPositions(prev => {
+        const newMap = new Map(prev);
+        newMap.set(newPointId, {x: edgeInfo.edgePoint.x, y: edgeInfo.edgePoint.y});
+        return newMap;
+      });
+      
+      // Generate advanced guides for this point
+      generateAdvancedGuides(newPoints.length - 1);
+      
+      // Set cursor style
+      if (canvasRef.current) {
+        canvasRef.current.style.cursor = 'grabbing';
+      }
+      
+      return;
+    }
+    
     // Don't start if we're touching on or near a point
     if (isNearExistingPoint(touchPos.x, touchPos.y, 15)) { // Larger threshold for touch
       return;
@@ -1987,53 +2044,6 @@ export default function ClipPathGenerator() {
       setMoveStartPosition(touchPos);
       if (canvasRef.current) {
         canvasRef.current.style.cursor = 'move';
-      }
-    } else {
-      // Check if we're on the edge of the polygon
-      const edgeInfo = isPointOnPolygonEdge(touchPos.x, touchPos.y, shape.points);
-      
-      if (edgeInfo.isOnEdge) {
-        // Start adding a new point by touching
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Create a new point at the edge location
-        const newPointId = generateId();
-        const newPoint: Point = { 
-          id: newPointId, 
-          x: edgeInfo.edgePoint.x, 
-          y: edgeInfo.edgePoint.y 
-        };
-        
-        // Insert the new point between the edge's start and end points
-        const newPoints = [...shape.points];
-        newPoints.splice(edgeInfo.edge.endIndex, 0, newPoint);
-        
-        // Update the shape with the new point
-        setShape({
-          ...shape,
-          points: newPoints
-        });
-        
-        // Set this new point as active for dragging
-        setActivePoint(newPoint);
-        setIsDragging(true);
-        setDraggedPointId(newPointId);
-        
-        // Store the original position of the point
-        setOriginalPointPositions(prev => {
-          const newMap = new Map(prev);
-          newMap.set(newPointId, {x: edgeInfo.edgePoint.x, y: edgeInfo.edgePoint.y});
-          return newMap;
-        });
-        
-        // Generate advanced guides for this point
-        generateAdvancedGuides(newPoints.length - 1);
-        
-        // Set cursor
-        if (canvasRef.current) {
-          canvasRef.current.style.cursor = 'grabbing';
-        }
       }
     }
   };
