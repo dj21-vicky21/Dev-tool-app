@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -23,7 +23,8 @@ import {
 } from "@/components/ui/select";
 import { CheckIcon, SendIcon } from "lucide-react";
 import { tools } from "@/lib/tools";
-import { sendEmail } from "@/app/actions/sendmail";
+import axios, { AxiosError } from 'axios';
+
 
 export default function FeedbackForm() {
   const searchParams = useSearchParams();
@@ -34,45 +35,88 @@ export default function FeedbackForm() {
   const [feedbackType, setFeedbackType] = useState("feedback");
   const [toolName, setToolName] = useState(toolParam || "general");
   const [message, setMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const resetForm = () => {
+    setEmail("");
+    setFeedbackType("feedback");
+    setToolName(toolParam || "general");
+    setMessage("");
+    formRef.current?.reset();
+  };
+
+  const formRef = useRef<HTMLFormElement | null>(null);
+    const [loading, setLoading] = useState<boolean>(false)
+
+  const toastMessage = (isSuccess: boolean) => {
+    toast({
+        title: isSuccess ? `Successfully sent!` : `Failed to send!`,
+    })
+}
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
-      setIsSubmitting(true);
+      setLoading(true);
       
-      const response = await sendEmail(email, feedbackType, toolName, message);
+      e.preventDefault();
 
-      if (response.success) {
-        // Simulate API call
-        setTimeout(() => {
-          setIsSubmitting(false);
-          setIsSubmitted(true);
+      if (formRef.current) {
+          setLoading(true)
+          // Collect form data
+          const formData = new FormData(formRef.current);
 
-          // Reset form after 2 seconds
-          setTimeout(() => {
-            setEmail("");
-            setFeedbackType("feedback");
-            setToolName("");
-            setMessage("");
-            setIsSubmitted(false);
-          }, 2500);
-        }, 1500);
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to submit feedback. Please try again later.",
-        });
+          // Convert FormData to a plain object
+          const formDataObject: { [key: string]: string } = {};
+          
+          formData.forEach((value, key) => {
+              formDataObject[key] = value.toString(); // Ensure all values are strings
+          });
+
+          // Convert object to JSON
+          const json = JSON.stringify(formDataObject);
+
+          // Basic Authentication credentials
+          const username = process.env.NEXT_PUBLIC_BASIC_AUTH_USER; // your username
+          const password = process.env.NEXT_PUBLIC_BASIC_AUTH_PASSWORD; //  your password
+          const base64Credentials = btoa(`${username}:${password}`);
+          const authHeader = `Basic ${base64Credentials}`;
+
+          try {
+              const response = await axios.post('/api/feedback', json, {
+                  headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': authHeader,
+                      'source': 'devgarage', // Include additional headers as needed
+                  },
+              });
+
+              const result = response.data;
+              if (response.status === 200 && result.success) {
+                  setLoading(false)
+                  console.info("Form submitted successfully!");
+                  resetForm(); // Reset the form after successful submission
+              } else {
+                  console.error("Form submission failed!", result);
+              }
+          } catch (error) {
+              toastMessage(false)
+              if(error instanceof AxiosError){
+                  console.error("Error submitting form:", error?.response?.data);
+                  return
+              }
+              
+              console.error("Error submitting form:", error);
+          }
       }
     } catch (error) {
       console.error("Error submitting feedback:", error);
-      setIsSubmitting(false);
+      setLoading(false);
       toast({
         title: "Error",
         description: "Failed to submit feedback. Please try again later.",
       });
-    }
+    } 
   };
 
   return (
@@ -88,14 +132,15 @@ export default function FeedbackForm() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!isSubmitted ? (
-            <form onSubmit={handleSubmit} className="space-y-6">
+          {!loading ? (
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="email">
                     Email <span className="text-red-500">*</span>
                   </Label>
                   <Input
+                    name="email"
                     id="email"
                     type="email"
                     placeholder="your.email@example.com"
@@ -109,7 +154,7 @@ export default function FeedbackForm() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="feedbackType">Feedback Type</Label>
-                  <Select value={feedbackType} onValueChange={setFeedbackType}>
+                  <Select value={feedbackType} name="feedbackType" onValueChange={setFeedbackType}>
                     <SelectTrigger id="feedbackType">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
@@ -126,7 +171,7 @@ export default function FeedbackForm() {
 
                 <div className="space-y-2">
                   <Label htmlFor="toolName">Related Tool</Label>
-                  <Select value={toolName} onValueChange={setToolName}>
+                  <Select value={toolName} name="toolName" onValueChange={setToolName}>
                     <SelectTrigger id="toolName">
                       <SelectValue placeholder="Select a tool (optional)" />
                     </SelectTrigger>
@@ -150,6 +195,7 @@ export default function FeedbackForm() {
                 </Label>
                 <Textarea
                   id="message"
+                  name="message"
                   placeholder="Please describe your feedback, issue, or enhancement suggestion in detail. Include steps to reproduce if reporting a bug."
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
@@ -161,9 +207,9 @@ export default function FeedbackForm() {
               <Button
                 type="submit"
                 className="w-full md:w-auto"
-                disabled={isSubmitting}
+                disabled={loading}
               >
-                {isSubmitting ? (
+                {loading ? (
                   <>Submitting...</>
                 ) : (
                   <>
