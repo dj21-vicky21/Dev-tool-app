@@ -15,6 +15,7 @@ import {
   Ruler,
   BackpackIcon,
   LayoutGrid,
+  Table,
 } from "lucide-react";
 import { Tool } from "./types";
 
@@ -101,14 +102,14 @@ export const tools: Tool[] = [
     description: "Generate CSS gradients with ease",
     href: "/tool/gradient-generator",
     icon: Paintbrush,
-    isNew: true,
+    isNew: false,
   },
   {
     name: "Glassmorphism Generator",
     description: "Create beautiful glass effect UI in CSS and Tailwind",
     href: "/tool/glassmorphism",
     icon: Layers,
-    isNew: true,
+    isNew: false,
   },
   {
     name: "CSS Unit Converter",
@@ -131,13 +132,19 @@ export const tools: Tool[] = [
       "Generate CSS Grid and Flexbox layouts with both CSS and Tailwind code.",
     href: "/tool/layout-generator",
     icon: LayoutGrid,
-    isNew: true,
+    isNew: false,
   },
   {
     name: "Clip Path Generator",
     description: "Generate CSS clip paths with ease",
     href: "/tool/clip-path-generator",
     icon: Image,
+    isNew: true,
+  },{
+    name: "JSON to Table",
+    description: "Convert JSON data to a table with ease",
+    href: "/tool/json-to-table",
+    icon: Table,
     isNew: true,
   },
 ];
