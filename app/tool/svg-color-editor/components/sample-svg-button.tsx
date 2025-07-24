@@ -10,7 +10,7 @@ interface SampleSVGButtonProps {
 export function SampleSVGButton({ onSampleSvgLoaded }: SampleSVGButtonProps) {
   const loadSampleSvg = async () => {
     try {
-      const response = await fetch('/window.svg');
+      const response = await fetch('/svg_sample.svg');
       if (!response.ok) {
         throw new Error('Failed to load sample SVG');
       }
