@@ -1865,6 +1865,9 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
     setMoveDistance({ x: 0, y: 0 });
   };
 
+  // Add state for background color
+  const [isDarkBackground, setIsDarkBackground] = useState(false);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* SVG Preview */}
@@ -1935,7 +1938,9 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
           <div
             id="svg-container"
             ref={svgContainerRef}
-            className="border rounded-lg p-4 flex items-center justify-center bg-gray-50 dark:bg-gray-900 cursor-move"
+            className={`border rounded-lg p-4 flex items-center justify-center cursor-move transition-colors ${
+              isDarkBackground ? 'bg-black' : 'bg-white'
+            }`}
             style={{ 
               touchAction: 'none',
               height: svgElements.length > 0 ? 'calc(100vh - 230px)' : '300px',
@@ -1987,47 +1992,44 @@ export function SVGEditor({ svgContent }: SVGEditorProps) {
           `}</style>
            <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 w-full sm:w-auto">
               <div className="flex flex-wrap items-center gap-2 justify-center mt-5">
-                {/* <div className="flex items-center gap-1"> */}
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handleZoom(1.2)}
-                    // title={`${modifierKey} +`}
-                    className="h-8 w-8"
-                  >
-                    +
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handleZoom(0.8)}
-                    // title={`${modifierKey} -`}
-                    className="h-8 w-8"
-                  >
-                    -
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleReset}
-                    // title={`${modifierKey} 0`}
-                  >
-                    Reset View
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={!selectedElement}
-                    onClick={clearSelection}
-                  >
-                    Clear selection
-                  </Button>
-                {/* </div> */}
-
-                {/* <div className="flex items-center gap-1"> */}
-                 
-                  
-                {/* </div> */}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleZoom(1.2)}
+                  className="h-8 w-8"
+                >
+                  +
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleZoom(0.8)}
+                  className="h-8 w-8"
+                >
+                  -
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleReset}
+                >
+                  Reset View
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!selectedElement}
+                  onClick={clearSelection}
+                >
+                  Clear selection
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsDarkBackground(!isDarkBackground)}
+                >
+                  {isDarkBackground ? "White BG" : "Black BG"}
+                </Button>
               </div>
             </div>
         </CardContent>
