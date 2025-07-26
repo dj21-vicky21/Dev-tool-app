@@ -16,10 +16,18 @@ import {
   BackpackIcon,
   LayoutGrid,
   Table,
+  Wand2,
 } from "lucide-react";
 import { Tool } from "./types";
 
 export const tools: Tool[] = [
+  {
+    name: "Regular Expression Tester",
+    description: "Test, validate, and experiment with regular expressions in real-time",
+    href: "/tool/regex-tester",
+    icon: Wand2,
+    isNew: true,
+  },
   {
     name: "Color Converter",
     description: "Convert colors between different formats (HEX, RGB, HSL)",
