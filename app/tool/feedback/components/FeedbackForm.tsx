@@ -23,9 +23,6 @@ import {
 } from "@/components/ui/select";
 import { CheckIcon, SendIcon } from "lucide-react";
 import { tools } from "@/lib/tools";
-import axios, { AxiosError } from 'axios';
-
-
 export default function FeedbackForm() {
   const searchParams = useSearchParams();
   const toolParam = searchParams.get("tool");
@@ -36,7 +33,7 @@ export default function FeedbackForm() {
   const [toolName, setToolName] = useState(toolParam || "general");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);  // Add success state
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const formRef = useRef<HTMLFormElement | null>(null);
 
@@ -57,51 +54,47 @@ export default function FeedbackForm() {
     try {
       setLoading(true);
 
-      if (formRef.current) {
-        const formData = new FormData(formRef.current);
-        const formDataObject: { [key: string]: string } = {};
-        
-        formData.forEach((value, key) => {
-          formDataObject[key] = value.toString();
-        });
+      const accessKey = process.env.NEXT_PUBLIC_WEB3FORM;
+      if (!accessKey) {
+        throw new Error("Web3Forms access key is not configured.");
+      }
 
-        const json = JSON.stringify(formDataObject);
-        const username = process.env.NEXT_PUBLIC_BASIC_AUTH_USER;
-        const password = process.env.NEXT_PUBLIC_BASIC_AUTH_PASSWORD;
-        const base64Credentials = btoa(`${username}:${password}`);
-        const authHeader = `Basic ${base64Credentials}`;
+      const payload = {
+        access_key: accessKey,
+        email,
+        feedbackType,
+        toolName,
+        message,
+        site: "stacktools",
+      };
 
-        const response = await axios.post('/api/feedback', json, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': authHeader,
-            'source': 'stacktools',
-          },
-        });
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-        const result = response.data;
-        if (response.status === 200 && result.success) {
-          resetForm();
-          setIsSubmitted(true);  // Show success card
-        } else {
-          throw new Error(result.message || "Form submission failed");
-        }
+      const result = await response.json();
+
+      if (result.success) {
+        resetForm();
+        setIsSubmitted(true);
+      } else {
+        throw new Error(result.message || "Form submission failed");
       }
     } catch (error) {
-      if(error instanceof AxiosError) {
-        toast({
-          title: "Error",
-          description: error.response?.data?.message || "Failed to submit feedback. Please try again.",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to submit feedback. Please try again later.",
-        });
-        console.error("Error submitting feedback:", error);
-      }
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to submit feedback. Please try again.";
+      toast({
+        title: "Error",
+        description: errorMessage,
+      });
+      console.error("Error submitting feedback:", error);
     } finally {
-      setLoading(false);  // Always reset loading state
+      setLoading(false);
     }
   };
 
