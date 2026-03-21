@@ -17,6 +17,7 @@ import {
   LayoutGrid,
   Table,
   Wand2,
+  Clock,
 } from "lucide-react";
 import { Tool } from "./types";
 
@@ -148,11 +149,19 @@ export const tools: Tool[] = [
     href: "/tool/clip-path-generator",
     icon: Image,
     isNew: true,
-  },{
+  },  {
     name: "JSON to Table",
     description: "Convert JSON data to a table with ease",
     href: "/tool/json-to-table",
     icon: Table,
+    isNew: true,
+  },
+  {
+    name: "Cron Expression Visualizer",
+    description:
+      "Parse and visualize cron expressions as human-readable schedules",
+    href: "/tool/cron-visualizer",
+    icon: Clock,
     isNew: true,
   },
 ];
