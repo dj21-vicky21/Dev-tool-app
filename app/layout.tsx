@@ -10,7 +10,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'DevGarage',
+  title: 'stacktools',
   description: 'A collection of modern frontend development tools',
 };
 

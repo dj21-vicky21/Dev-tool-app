@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
         }
 
         formData.access_key = accessKey;
-        formData.site = "DevGarage";
+        formData.site = "stacktools";
 
         // Forward the request to the external API
         const response = await fetch("https://api.web3forms.com/submit", {

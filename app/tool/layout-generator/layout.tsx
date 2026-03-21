@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "CSS Layout Generator | DevGarage",
+  title: "CSS Layout Generator | stacktools",
   description:
     "Generate responsive CSS Grid and Flexbox layouts with both CSS and Tailwind code.",
 };

@@ -2,7 +2,7 @@ import AppContent from "./components/app-content";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "SVG Color Editor | DevGarage",
+  title: "SVG Color Editor | stacktools",
   description: "Edit SVG colors with ease",
 };
 

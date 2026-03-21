@@ -2,7 +2,7 @@ import React from 'react'
 import { Metadata } from 'next' 
 
 export const metadata: Metadata = {
-  title: "QR Code Generator | DevGarage",
+  title: "QR Code Generator | stacktools",
   description: "Generate QR codes for URLs, text, or any data",
 };
 

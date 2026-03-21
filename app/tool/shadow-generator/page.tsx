@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import ShadowGenerator from "./components/ShadowGenerator";
 
 export const metadata: Metadata = {
-  title: "Shadow Generator | DevGarage",
+  title: "Shadow Generator | stacktools",
   description: "Create beautiful CSS box and text shadows with our interactive shadow generator tool.",
 };
 
