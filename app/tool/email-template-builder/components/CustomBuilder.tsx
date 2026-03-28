@@ -73,6 +73,7 @@ interface BlockProps {
   companyName?: string;
   logoUrl?: string;
   bgColor?: string;
+  href?: string;
   text?: string;
   level?: "h1" | "h2" | "h3";
   color?: string;
@@ -198,12 +199,15 @@ function blockToHtml(block: EmailBlock): string {
         : "0";
 
   switch (block.type) {
-    case "logo":
-      return `<tr><td style="padding:30px 40px;text-align:center;background:${p.bgColor || "#4F46E5"};">${
-        p.logoUrl
-          ? `<img src="${p.logoUrl}" alt="${p.companyName || ""}" width="140" style="display:block;margin:0 auto;" />`
-          : `<span style="font-size:24px;font-weight:700;color:#ffffff;">${p.companyName || ""}</span>`
-      }</td></tr>`;
+    case "logo": {
+      const logoContent = p.logoUrl
+        ? `<img src="${p.logoUrl}" alt="${p.companyName || ""}" width="140" style="display:block;margin:0 auto;" />`
+        : `<span style="font-size:24px;font-weight:700;color:#ffffff;">${p.companyName || ""}</span>`;
+      const logoInner = p.href
+        ? `<a href="${p.href}" target="_blank" style="text-decoration:none;">${logoContent}</a>`
+        : logoContent;
+      return `<tr><td style="padding:30px 40px;text-align:center;background:${p.bgColor || "#4F46E5"};">${logoInner}</td></tr>`;
+    }
 
     case "heading": {
       const tag = p.level || "h1";
@@ -221,12 +225,15 @@ function blockToHtml(block: EmailBlock): string {
     case "button":
       return `<tr><td style="padding:16px 40px;text-align:${align};"><table role="presentation" cellpadding="0" cellspacing="0" style="margin:${margin};"><tr><td style="background:${p.buttonColor || "#4F46E5"};border-radius:6px;"><a href="${p.buttonUrl || "#"}" target="_blank" style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;">${p.buttonText || "Button"}</a></td></tr></table></td></tr>`;
 
-    case "image":
-      return `<tr><td style="padding:16px 40px;text-align:center;">${
-        p.src
-          ? `<img src="${p.src}" alt="${p.alt || ""}" width="${p.width || "100%"}" style="max-width:100%;display:block;margin:0 auto;border-radius:4px;" />`
-          : `<div style="background:#F3F4F6;height:180px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9CA3AF;font-size:14px;">Image placeholder &mdash; add a URL in block properties</div>`
-      }</td></tr>`;
+    case "image": {
+      const imgTag = p.src
+        ? `<img src="${p.src}" alt="${p.alt || ""}" width="${p.width || "100%"}" style="max-width:100%;display:block;margin:0 auto;border-radius:4px;" />`
+        : `<div style="background:#F3F4F6;height:180px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9CA3AF;font-size:14px;">Image placeholder &mdash; add a URL in block properties</div>`;
+      const imgInner = p.href && p.src
+        ? `<a href="${p.href}" target="_blank">${imgTag}</a>`
+        : imgTag;
+      return `<tr><td style="padding:16px 40px;text-align:center;">${imgInner}</td></tr>`;
+    }
 
     case "divider":
       return `<tr><td style="padding:16px 40px;"><hr style="border:none;border-top:1px solid ${p.dividerColor || "#E5E7EB"};margin:0;" /></td></tr>`;
@@ -581,6 +588,17 @@ function BlockPropertiesPanel({
             />
           </div>
           <div className="space-y-1">
+            <Label className="text-xs">
+              Link URL{" "}
+              <span className="text-muted-foreground">(optional)</span>
+            </Label>
+            <Input
+              value={p.href || ""}
+              onChange={(e) => onUpdate({ href: e.target.value })}
+              placeholder="https://example.com"
+            />
+          </div>
+          <div className="space-y-1">
             <Label className="text-xs">Background Color</Label>
             <div className="flex gap-2 items-center">
               <Input
@@ -722,6 +740,17 @@ function BlockPropertiesPanel({
               value={p.src || ""}
               onChange={(e) => onUpdate({ src: e.target.value })}
               placeholder="https://example.com/image.jpg"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">
+              Link URL{" "}
+              <span className="text-muted-foreground">(makes image clickable)</span>
+            </Label>
+            <Input
+              value={p.href || ""}
+              onChange={(e) => onUpdate({ href: e.target.value })}
+              placeholder="https://example.com"
             />
           </div>
           <div className="space-y-1">
