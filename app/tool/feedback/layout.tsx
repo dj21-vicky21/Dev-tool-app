@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Feedback | stacktools",
+  title: "Feedback | Stacktools",
   description: "Share your feedback or suggest enhancements for our development tools.",
 };
 

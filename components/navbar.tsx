@@ -30,8 +30,8 @@ export function Navigation() {
       <div className="container flex h-16 items-center px-4  mx-auto">
         <div className="flex items-center space-x-4">
           <Link href="/" className="flex items-center space-x-2">
-            {/* <Image src="/favicon.svg" alt="stacktools" width={32} height={32} className="dark:bg-white rounded-full"/> */}
-            <span className="font-bold">stacktools</span>
+            {/* <Image src="/favicon.svg" alt="Stacktools" width={32} height={32} className="dark:bg-white rounded-full"/> */}
+            <span className="font-bold">Stacktools</span>
           </Link>
         </div>
         <div className="ml-auto flex">

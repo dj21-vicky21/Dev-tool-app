@@ -2,7 +2,7 @@ import React from 'react'
 import { Metadata } from 'next' 
 
 export const metadata: Metadata = {
-  title: "Password Generator | stacktools",
+  title: "Password Generator | Stacktools",
   description: "Generate secure, random passwords",
 };
 

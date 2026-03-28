@@ -2,7 +2,7 @@ import React from 'react'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: "UUID Generator | stacktools",
+  title: "UUID Generator | Stacktools",
   description: "Generate UUIDs in various formats",
 };  
 

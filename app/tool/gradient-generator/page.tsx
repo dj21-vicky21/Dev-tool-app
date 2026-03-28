@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import GradientGenerator from "./components/GradientGenerator";
 
 export const metadata: Metadata = {
-  title: "Gradient Generator | stacktools",
+  title: "Gradient Generator | Stacktools",
   description: "Create beautiful CSS gradients with our interactive gradient generator tool.",
 };
 

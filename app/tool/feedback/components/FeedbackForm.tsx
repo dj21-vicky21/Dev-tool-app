@@ -65,7 +65,7 @@ export default function FeedbackForm() {
         feedbackType,
         toolName,
         message,
-        site: "stacktools",
+        site: "Stacktools",
       };
 
       const response = await fetch("https://api.web3forms.com/submit", {

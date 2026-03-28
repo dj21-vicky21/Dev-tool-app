@@ -2,7 +2,7 @@ import React from 'react'
 import { Metadata } from 'next' 
 
 export const metadata: Metadata = {
-  title: "JSON Tool | stacktools",
+  title: "JSON Tool | Stacktools",
   description: "Validate, format, and analyze JSON data",
 };
 

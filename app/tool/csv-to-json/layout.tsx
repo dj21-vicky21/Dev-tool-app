@@ -2,7 +2,7 @@ import React from 'react'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: "CSV to JSON | stacktools",
+  title: "CSV to JSON | Stacktools",
   description: "Convert CSV data to JSON format",
 };
 

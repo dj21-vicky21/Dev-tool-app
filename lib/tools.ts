@@ -18,6 +18,7 @@ import {
   Table,
   Wand2,
   Clock,
+  Mail,
 } from "lucide-react";
 import { Tool } from "./types";
 
@@ -162,6 +163,14 @@ export const tools: Tool[] = [
       "Parse and visualize cron expressions as human-readable schedules",
     href: "/tool/cron-visualizer",
     icon: Clock,
+    isNew: true,
+  },
+  {
+    name: "Email Template Builder",
+    description:
+      "Build responsive HTML email templates with live preview and export",
+    href: "/tool/email-template-builder",
+    icon: Mail,
     isNew: true,
   },
 ];

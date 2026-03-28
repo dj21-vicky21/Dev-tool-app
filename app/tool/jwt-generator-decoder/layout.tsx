@@ -2,7 +2,7 @@ import React from 'react'
 import { Metadata } from 'next'     
 
 export const metadata: Metadata = {
-  title: "JWT Decoder | stacktools",
+  title: "JWT Decoder | Stacktools",
   description: "Decode and inspect JSON Web Tokens",
 };
 

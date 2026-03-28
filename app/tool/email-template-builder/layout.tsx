@@ -2,9 +2,9 @@ import React from "react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Cron Expression Visualizer | Stacktools",
+  title: "Email Template Builder | Stacktools",
   description:
-    "Parse and visualize cron expressions as human-readable schedules with next execution times",
+    "Build responsive HTML email templates with live preview, customization, and one-click export",
 };
 
 function layout({ children }: { children: React.ReactNode }) {

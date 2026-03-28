@@ -2,7 +2,7 @@ import React from 'react'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Glassmorphism Generator | stacktools',
+  title: 'Glassmorphism Generator | Stacktools',
   description: 'Generate glassmorphism effects for your website',
 }
 
